@@ -1,0 +1,14 @@
+# AudioSet data files
+assessments/
+labels/
+segments/
+
+# AudioSet features as TensorFlow record (.tfrecord) files
+features.tar.gz
+features/
+
+# Raw dataset
+raw/
+
+# Symbolic link of raw dataset grouped by class label
+videos/
