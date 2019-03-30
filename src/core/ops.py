@@ -1,7 +1,5 @@
 import os
 
-import tensorflow as tf
-
 from util import ffmpeg, tensorplow as tp
 
 
@@ -50,7 +48,4 @@ def compute_spectrogram(waveform, output):
                          window_length=0.01,
                          overlap=0.5)
 
-    with open(output, 'wb') as outfile:
-        cast = tf.cast(spc, tf.dtypes.uint8)
-        encode = tf.image.encode_png(cast)
-        outfile.write(tp.run(encode))
+    tp.save_image(spc, output)
