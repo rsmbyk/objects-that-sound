@@ -1,0 +1,92 @@
+[
+  {
+    "id": "/m/0dgw9r",
+    "name": "Human sounds",
+    "description": "Sounds produced by the human body through the actions of the individual.",
+    "citation_uri": "",
+    "positive_examples": [],
+    "child_ids": ["/m/09l8g", "/m/01w250", "/m/09hlz4", "/m/0bpl036", "/m/0160x5", "/m/0k65p", "/m/01jg02", "/m/04xp5v", "/t/dd00012"],
+    "restrictions": ["abstract"]
+  },
+  {
+    "id": "/m/09l8g",
+    "name": "Human voice",
+    "description": "The human voice consists of sound made by a human being using the vocal folds for talking, singing, laughing, crying, screaming, etc. The human voice is specifically a part of human sound production in which the vocal folds are the primary sound source.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Human_voice",
+    "positive_examples": [],
+    "child_ids": ["/m/09x0r", "/m/07p6fty", "/m/03qc9zr", "/m/02rtxlg", "/m/01j3sz", "/m/0463cq4", "/m/07qw_06", "/m/07plz5l", "/m/015lz1", "/m/02fxyj", "/m/07s2xch", "/m/07r4k75", "/m/01j423"],
+    "restrictions": ["abstract"]
+  },
+  {
+    "id": "/m/09x0r",
+    "name": "Speech",
+    "description": "Speech is the vocalized form of human communication, created out of the phonetic combination of a limited set of vowel and consonant speech sound units.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Speech",
+    "positive_examples": ["youtu.be/8uI9H5jGRV8?start=30&end=40", "youtu.be/cz8QIJHjZh4?start=30&end=40", "youtu.be/91FIbeKyIhw?start=30&end=40", "youtu.be/V3HdocEv8gw?start=220&end=230", "youtu.be/a8igK2oWlVY?start=30&end=40", "youtu.be/2hvTtM7VdJg?start=30&end=40", "youtu.be/S7ytQItOrkk?start=30&end=40", "youtu.be/Zyl2Q3GepPA?start=30&end=40", "youtu.be/CU1qRm_Bcps?start=30&end=40"],
+    "child_ids": ["/m/05zppz", "/m/02zsn", "/m/0ytgt", "/m/01h8n0", "/m/02qldy", "/m/0261r1", "/m/0brhx"],
+    "restrictions": []
+  },
+  {
+    "id": "/m/05zppz",
+    "name": "Male speech, man speaking",
+    "description": "Speech uttered by an adult male human.",
+    "citation_uri": "",
+    "positive_examples": ["youtu.be/6niRPYpLOpQ?start=30&end=40", "youtu.be/fPgUDHwQOmM?start=320&end=330", "youtu.be/g3YNJ3ESIW0?start=30&end=40", "youtu.be/Dys9DJoFnGA?start=30&end=40", "youtu.be/3PESOesDniw?start=30&end=40", "youtu.be/E8RfeFAzHK4?start=30&end=40", "youtu.be/A_WSbkJozPs?start=90&end=100", "youtu.be/-yZuFZRojYA?start=30&end=40", "youtu.be/ECOK21oFttk?start=30&end=40"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/02zsn",
+    "name": "Female speech, woman speaking",
+    "description": "Speech uttered by an adult female human.",
+    "citation_uri": "",
+    "positive_examples": ["youtu.be/4l05nCOnIRg?start=30&end=40", "youtu.be/5zyOhZsvIzI?start=30&end=40", "youtu.be/q0wv9AOl4r0?start=100&end=110", "youtu.be/AyPqm-tm2y4?start=30&end=40", "youtu.be/1xXqIpjxYG4?start=30&end=40", "youtu.be/xYPZJkfiyjk?start=90&end=100", "youtu.be/46lVxNflfDw?start=30&end=40", "youtu.be/8OpLsWMn6P0?start=30&end=40", "youtu.be/WLi5_z61zCE?start=30&end=40"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/0ytgt",
+    "name": "Child speech, kid speaking",
+    "description": "Speech uttered by a human child, i.e. a human whose voice does not yet resemble that of an adult.",
+    "citation_uri": "",
+    "positive_examples": ["youtu.be/iPIGoScYduI?start=210&end=220", "youtu.be/DiJgMH7vg1E?start=30&end=40", "youtu.be/yy0LZBmZRvE?start=60&end=70", "youtu.be/arz0xujSWdY?start=230&end=240", "youtu.be/-oC3FVOx62g?start=210&end=220", "youtu.be/5-R8zaohZrU?start=10&end=20", "youtu.be/OXJ77G_TqDc?start=40&end=50", "youtu.be/koW60o-aLjI?start=470&end=480", "youtu.be/uBVLhywbCQk?start=30&end=40"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/01h8n0",
+    "name": "Conversation",
+    "description": "Interactive, spontaneous spoken communication between two or more people.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Conversation",
+    "positive_examples": ["youtu.be/4FQxw_49xAk?start=30&end=40", "youtu.be/0WcG16XxghA?start=30&end=40", "youtu.be/RHfaNoYg8vs?start=170&end=180", "youtu.be/twGajApu-7g?start=560&end=570", "youtu.be/A0Lpt0VWYCA?start=50&end=60", "youtu.be/ermWzXxDjOQ?start=110&end=120", "youtu.be/sEF1KNfvY90?start=230&end=240", "youtu.be/DhlPa8lUosM?start=300&end=310"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/02qldy",
+    "name": "Narration, monologue",
+    "description": "Speech by a single human aimed at an audience (either present or assumed, as in a video blog).",
+    "citation_uri": "http://en.wikipedia.org/wiki/Narration",
+    "positive_examples": ["youtu.be/8maPz8qrmnM?start=30&end=40", "youtu.be/8vmb60ydHtY?start=30&end=40", "youtu.be/fL52Quhhomc?start=30&end=40", "youtu.be/6tXGhWY1I8I?start=30&end=40", "youtu.be/FwRo7yXVnL0?start=30&end=40", "youtu.be/TKPjvQtnELU?start=360&end=370", "youtu.be/Cf6AAX-r6wk?start=30&end=40", "youtu.be/EmLsodfGoes?start=30&end=40", "youtu.be/20lm7Ow9RSY?start=30&end=40", "youtu.be/25K0bryItv4?start=30&end=40"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/0261r1",
+    "name": "Babbling",
+    "description": "Speech-like sounds uttered by a human that lack the deeper structure and meaning of conventional speech. Babbling is a stage in a child's development of language.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Babbling",
+    "positive_examples": ["youtu.be/ZR48r_8OhUI?start=50&end=60", "youtu.be/2ZxE0uMIfa0?start=10&end=20", "youtu.be/vFbu0dH7f-U?start=10&end=20", "youtu.be/soXBLBCaClA?start=90&end=100", "youtu.be/ICajcUYAan8?start=410&end=420", "youtu.be/lluzItlOMlQ?start=10&end=20", "youtu.be/EyCpVw_Xn60?start=130&end=140"],
+    "child_ids": [],
+    "restrictions": []
+  },
+  {
+    "id": "/m/01h3n",
+    "name": "Bee, wasp, etc.",
+    "description": "Sounds associated with these closely-related species of flying insects known for pollination, honey-production, and the ability to sting humans.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Bee",
+    "positive_examples": ["youtu.be/GWmgGN3qwLk?start=280&end=290", "youtu.be/rdwmkUJzLRQ?start=400&end=410", "youtu.be/CqkChVlZ0Zc?start=480&end=490", "youtu.be/uGS7O46tlSo?start=70&end=80", "youtu.be/Uax2BiqOKEg?start=130&end=140", "youtu.be/N2arYiB9j-g?start=100&end=110"],
+    "child_ids": ["/m/07pjwq1"],
+    "restrictions": []
+  }
+]

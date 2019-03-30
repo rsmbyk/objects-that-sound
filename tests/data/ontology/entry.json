@@ -1,0 +1,9 @@
+{
+  "id": "/m/0dgw9r",
+  "name": "Human sounds",
+  "description": "Sounds produced by the human body through the actions of the individual.",
+  "citation_uri": "",
+  "positive_examples": [],
+  "child_ids": ["/m/09l8g", "/m/01w250", "/m/09hlz4", "/m/0bpl036", "/m/0160x5", "/m/0k65p", "/m/01jg02", "/m/04xp5v", "/t/dd00012"],
+  "restrictions": ["abstract"]
+}

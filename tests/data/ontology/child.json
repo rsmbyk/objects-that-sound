@@ -1,0 +1,9 @@
+{
+  "id": "/m/09l8g",
+  "name": "Human voice",
+  "description": "The human voice consists of sound made by a human being using the vocal folds for talking, singing, laughing, crying, screaming, etc. The human voice is specifically a part of human sound production in which the vocal folds are the primary sound source.",
+  "citation_uri": "http://en.wikipedia.org/wiki/Human_voice",
+  "positive_examples": [],
+  "child_ids": ["/m/09x0r", "/m/07p6fty", "/m/03qc9zr", "/m/02rtxlg", "/m/01j3sz", "/m/0463cq4", "/m/07qw_06", "/m/07plz5l", "/m/015lz1", "/m/02fxyj", "/m/07s2xch", "/m/07r4k75", "/m/01j423"],
+  "restrictions": ["abstract"]
+}
