@@ -10,7 +10,7 @@ def extract_frames(raw, output_dir):
     if not os.path.isdir(output_dir):
         raise NotADirectoryError('OUTPUT_DIR ({})'.format(output_dir))
 
-    ffmpeg.ffmpeg(raw, os.path.join(output_dir, '%d.jpg'),
+    ffmpeg.ffmpeg(raw, os.path.join(output_dir, '%d.png'),
                   r=25,
                   start_number=0,
                   vf='scale=256:256:force_original_aspect_ratio=increase')
