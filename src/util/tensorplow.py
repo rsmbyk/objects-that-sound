@@ -27,6 +27,16 @@ def load_wav(filename):
     return wav
 
 
+def save_image(image, outfile):
+    if not os.path.exists(os.path.dirname(outfile)):
+        os.makedirs(os.path.dirname(outfile))
+
+    with open(outfile, 'wb') as output:
+        cast = tf.cast(image, tf.dtypes.uint8)
+        encode = tf.image.encode_png(cast)
+        output.write(run(encode))
+
+
 def spectrogram(waveform, sample_rate, window_length, overlap):
     # calculate spectrogram properties
     window_size = sample_rate * window_length
