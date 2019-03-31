@@ -73,8 +73,8 @@ def test_string_representation_should_contains_id(test_root_entry_json):
 
 def test_wrap(test_root_entry_json, test_entry_json, test_child_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
-    child = Entry(**test_child_entry_json)
+    entry = Entry(None, **test_entry_json)
+    child = Entry(None, **test_child_entry_json)
     entry.link(child)
     root_entry.wrap(entry)
     assert entry in root_entry.children
@@ -89,8 +89,8 @@ def test_wrap_with_invalid_type(test_root_entry_json):
 
 def test_wrap_should_not_add_additional_children(test_root_entry_json, test_entry_json, test_child_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
-    child = Entry(**test_child_entry_json)
+    entry = Entry(None, **test_entry_json)
+    child = Entry(None, **test_child_entry_json)
     entry.link(child)
     root_entry.wrap(entry)
     assert len(root_entry.children) == 1
@@ -98,14 +98,14 @@ def test_wrap_should_not_add_additional_children(test_root_entry_json, test_entr
 
 def test_wrap_should_add_child_ids(test_root_entry_json, test_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
+    entry = Entry(None, **test_entry_json)
     root_entry.wrap(entry)
     assert entry.id in root_entry.child_ids
 
 
 def test_wrap_should_not_add_duplicate_child_ids(test_root_entry_json, test_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
+    entry = Entry(None, **test_entry_json)
     root_entry.wrap(entry)
     root_entry.wrap(entry)
     assert len(root_entry.child_ids) == 1
@@ -113,8 +113,8 @@ def test_wrap_should_not_add_duplicate_child_ids(test_root_entry_json, test_entr
 
 def test_items_should_contains_all_entries(test_root_entry_json, test_entry_json, test_child_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
-    child = Entry(**test_child_entry_json)
+    entry = Entry(None, **test_entry_json)
+    child = Entry(None, **test_child_entry_json)
     entry.link(child)
     root_entry.wrap(entry)
     items = entry.items()
@@ -124,8 +124,8 @@ def test_items_should_contains_all_entries(test_root_entry_json, test_entry_json
 
 def test_items_should_not_contains_additional_item(test_root_entry_json, test_entry_json, test_child_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
-    child = Entry(**test_child_entry_json)
+    entry = Entry(None, **test_entry_json)
+    child = Entry(None, **test_child_entry_json)
     entry.link(child)
     root_entry.wrap(entry)
     root_items = root_entry.items()
@@ -134,8 +134,8 @@ def test_items_should_not_contains_additional_item(test_root_entry_json, test_en
 
 def test_items_should_not_contains_root_id(test_root_entry_json, test_entry_json, test_child_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
-    child = Entry(**test_child_entry_json)
+    entry = Entry(None, **test_entry_json)
+    child = Entry(None, **test_child_entry_json)
     entry.link(child)
     root_entry.wrap(entry)
     root_items = root_entry.items()
@@ -144,6 +144,6 @@ def test_items_should_not_contains_root_id(test_root_entry_json, test_entry_json
 
 def test_root_entry_should_be_unable_to_be_linked(test_root_entry_json, test_entry_json):
     root_entry = RootEntry(**test_root_entry_json)
-    entry = Entry(**test_entry_json)
+    entry = Entry(None, **test_entry_json)
     with pytest.raises(NotImplementedError):
         root_entry.link(entry)

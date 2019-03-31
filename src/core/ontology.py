@@ -3,15 +3,14 @@ import pandas as pd
 import re
 from typing import List, Dict
 
-from core.config import config
-
 
 class Entry:
     # noinspection PyShadowingBuiltins
-    def __init__(self, id, name,
+    def __init__(self, root_dir, id, name,
                  description=None, citation_uri=None,
                  positive_examples=None, child_ids=None, restrictions=None):
 
+        self.root_dir: str = root_dir
         self.id: str = id
         self.name: str = name
         self.description: str = description or ''
@@ -46,7 +45,6 @@ class Entry:
 
     @property
     def paths(self):
-        # TODO: add test(s)
         if not self.parents:
             return [self.proper_name]
 
@@ -56,12 +54,10 @@ class Entry:
 
     @property
     def dirs(self):
-        # TODO: add test(s)
-        return list(map(lambda p: config.label.dir.format(label=p), self.paths))
+        return list(map(lambda p: os.path.join(self.root_dir, p), self.paths))
 
     def items(self):
         """ return flat list of all children. """
-        # TODO: add test(s)
         return list(set([self.id] + [item                          # item
                                      for child in self.children    # list of child
                                      for item in child.items()]))  # list of item in each child
@@ -136,7 +132,7 @@ class RootEntry(Entry):
 
     # noinspection PyShadowingBuiltins
     def __init__(self, id, name):
-        super().__init__(id, name)
+        super().__init__(None, id, name)
         self.root_identifier = RootEntry.root_identifier
         RootEntry.root_identifier += 1
 
@@ -168,7 +164,7 @@ class RootEntry(Entry):
 
 
 class Ontology:
-    def __init__(self, filename: str):
+    def __init__(self, filename, root_dir):
         if not os.path.exists(filename):
             raise FileNotFoundError('FILE ({})'.format(filename))
 
@@ -176,6 +172,7 @@ class Ontology:
             raise TypeError('FILENAME cannot be of type {}', type(filename))
 
         self.__root__ = None
+        self.__root_dir = root_dir
         self.__filename = filename
 
     @property
@@ -183,11 +180,19 @@ class Ontology:
         return self.__filename
 
     @property
+    def root_dir(self):
+        return self.__root_dir
+
+    @property
     def __root(self):
         if not self.__root__:
             ontology = pd.read_json(self.__filename).set_index('id')
             labels: Dict[str, Entry] =\
-                {mid: Entry(id=mid, **row.to_dict()) for mid, row in ontology.iterrows()}
+                {mid: Entry(root_dir=self.root_dir,
+                            id=mid,
+                            **row.to_dict())
+                 for mid, row
+                 in ontology.iterrows()}
 
             for label in labels.values():
                 missing_ids = list(filter(lambda x: x not in labels, label.child_ids))
