@@ -4,9 +4,9 @@ import tensorflow as tf
 from tensorflow.contrib.framework.python.ops import audio_ops
 
 
-def run(tensor):
+def run(tensor, feed_dict=None):
     with tf.Session() as sess:
-        return sess.run(tensor)
+        return sess.run(tensor,  feed_dict)
 
 
 def load_image(filename):
