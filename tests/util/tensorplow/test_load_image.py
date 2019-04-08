@@ -15,8 +15,7 @@ def non_existing_test_image_file():
 
 def test_load_image(test_image_file):
     image = tp.load_image(test_image_file)
-    content = tp.run(image)
-    assert content.shape == (256, 341, 3)
+    assert image.shape == (256, 341, 3)
 
 
 def test_load_non_existing_image(non_existing_test_image_file):

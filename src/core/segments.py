@@ -106,7 +106,7 @@ class Segment:
                               self.wav)
 
         if not self.__waveform:
-            self.__waveform = tp.run(tp.load_wav(self.wav))
+            self.__waveform = tp.load_wav(self.wav)
 
         return self.__waveform
 
@@ -114,7 +114,7 @@ class Segment:
         if not os.path.exists(self.frame(index)):
             ops.extract_frames(self.raw,
                                self.frames_dir)
-        return tp.run(tp.load_image(self.frame(index)))
+        return tp.load_image(self.frame(index))
 
     def load_spectrogram(self, index):
         if not os.path.exists(self.spectrogram(index)):
@@ -122,7 +122,7 @@ class Segment:
             end_index = start_index + self.sample_rate
             waveform = self.waveform.audio[start_index:end_index]
             ops.compute_spectrogram(waveform, self.spectrogram(index))
-        return tp.run(tp.load_image(self.spectrogram(index)))
+        return tp.load_image(self.spectrogram(index))
 
     def get_positive_sample_index(self):
         frame_positive_indices = range(self.start_frames, min(self.end_frames, len(self)))

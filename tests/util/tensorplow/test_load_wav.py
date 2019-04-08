@@ -15,9 +15,8 @@ def non_existing_test_wav_file():
 
 def test_load_wav(test_wav_file):
     wav = tp.load_wav(test_wav_file)
-    content = tp.run(wav)
-    assert content.sample_rate == 48000
-    assert len(content.audio) >= 48000
+    assert wav.sample_rate == 48000
+    assert len(wav.audio) >= 48000
 
 
 def test_load_non_existing_wav(non_existing_test_wav_file):
