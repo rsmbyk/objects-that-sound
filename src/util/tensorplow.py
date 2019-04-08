@@ -9,6 +9,37 @@ def run(tensor, feed_dict=None):
         return sess.run(tensor,  feed_dict)
 
 
+class Ops:
+    def __init__(self):
+        self.__ops = dict()
+
+    def get_ops(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def get_key(self, *args, **kwargs):
+        return None
+
+    def parse(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def clean_args(self, *args, **kwargs):
+        return args, kwargs
+
+    def ops(self, *args, **kwargs):
+        ops_key = self.get_key(*args, **kwargs)
+        if ops_key not in self.__ops:
+            self.__ops[ops_key] = self.get_ops(*args, **kwargs)
+        return self.__ops[ops_key]
+
+    def __call__(self, *args, **kwargs):
+        args, kwargs = self.clean_args(*args, **kwargs)
+        ops = self.ops(*args, **kwargs)
+        feed_dict = self.parse(*args, **kwargs)
+        if not isinstance(feed_dict, dict):
+            raise TypeError('\'parse\' result must be a dict')
+        return run(ops, feed_dict)
+
+
 def load_image(filename):
     if not os.path.exists(filename):
         raise FileNotFoundError('FILE ({})'.format(filename))
