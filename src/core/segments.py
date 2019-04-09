@@ -60,7 +60,7 @@ class Segment:
         return os.path.join(self.dir, '{}.wav'.format(self.ytid))
 
     def frame(self, index):
-        return os.path.join(self.frames_dir, '{}.png'.format(index))
+        return os.path.join(self.frames_dir, '{}.jpg'.format(index))
 
     def spectrogram(self, index):
         return os.path.join(self.spectrograms_dir, '{}.png'.format(index))
