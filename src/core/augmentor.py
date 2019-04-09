@@ -7,6 +7,9 @@ class VisionAugmentor(Ops):
     def __init__(self, shape):
         super().__init__()
         self.shape = shape
+
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.frame = tf.placeholder(tf.dtypes.uint8, (None, None, 3))
 
     def get_ops(self, frame):
@@ -24,6 +27,9 @@ class AudioAugmentor(Ops):
     def __init__(self, shape):
         super().__init__()
         self.shape = shape
+
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.spectrogram = tf.placeholder(tf.dtypes.uint8, (None, None, 1))
 
     def get_ops(self, spectrogram):

@@ -5,8 +5,8 @@ from util.tensorplow import Ops
 
 
 class Multiply(Ops):
-    def __init__(self):
-        super().__init__()
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.x = tf.placeholder(tf.dtypes.float32)
         self.y = tf.placeholder(tf.dtypes.float32)
 
@@ -27,9 +27,19 @@ class CustomArgsOps(Multiply):
         return [x, 1], kwargs
 
 
-class NonDictParseOps(Ops):
+class NotSetPlaceholderOps(Multiply):
     def __init__(self):
         super().__init__()
+        self.x = tf.placeholder(tf.dtypes.float32)
+        self.y = tf.placeholder(tf.dtypes.float32)
+
+    def set_placeholder(self):
+        pass
+
+
+class NonDictParseOps(Ops):
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.x = tf.placeholder(tf.dtypes.float32)
         self.y = tf.placeholder(tf.dtypes.float32)
 
@@ -65,6 +75,11 @@ def custom_key_ops():
 @pytest.fixture
 def custom_args_ops():
     return CustomArgsOps()
+
+
+@pytest.fixture
+def not_set_placeholder_ops():
+    return NotSetPlaceholderOps()
 
 
 @pytest.fixture
@@ -119,6 +134,11 @@ def test_custom_args(custom_args_ops):
 
 def test_custom_kwargs(custom_args_ops):
     assert custom_args_ops(x=5, y=4) == 5
+
+
+def test_placeholder_must_be_set_in_dedicated_method(not_set_placeholder_ops):
+    with pytest.raises(TypeError):
+        not_set_placeholder_ops(3, 4)
 
 
 def test_call(ops):

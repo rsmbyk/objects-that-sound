@@ -3,15 +3,23 @@ import os
 import tensorflow as tf
 from tensorflow.contrib.framework.python.ops import audio_ops
 
+tp_ops = dict()
+tp_graph = tf.Graph()
+
 
 def run(tensor, feed_dict=None):
     with tf.Session() as sess:
-        return sess.run(tensor,  feed_dict)
+        return sess.run(tensor, feed_dict)
 
 
 class Ops:
     def __init__(self):
         self.__ops = dict()
+        with tp_graph.as_default():
+            self.set_placeholder()
+
+    def set_placeholder(self):
+        pass
 
     def get_ops(self, *args, **kwargs):
         raise NotImplementedError()
@@ -28,7 +36,8 @@ class Ops:
     def ops(self, *args, **kwargs):
         ops_key = self.get_key(*args, **kwargs)
         if ops_key not in self.__ops:
-            self.__ops[ops_key] = self.get_ops(*args, **kwargs)
+            with tp_graph.as_default():
+                self.__ops[ops_key] = self.get_ops(*args, **kwargs)
         return self.__ops[ops_key]
 
     def __call__(self, *args, **kwargs):
@@ -37,10 +46,8 @@ class Ops:
         feed_dict = self.parse(*args, **kwargs)
         if not isinstance(feed_dict, dict):
             raise TypeError('\'parse\' result must be a dict')
-        return run(ops, feed_dict)
-
-
-tp_ops = dict()
+        with tp_graph.as_default():
+            return run(ops, feed_dict)
 
 
 def get_ops(class_):
@@ -54,8 +61,8 @@ def get_ops(class_):
 
 
 class LoadImage(Ops):
-    def __init__(self):
-        super().__init__()
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.filename = tf.placeholder(tf.dtypes.string)
 
     def get_ops(self, filename, channels):
@@ -74,8 +81,8 @@ class LoadImage(Ops):
 
 
 class LoadWav(Ops):
-    def __init__(self):
-        super().__init__()
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.filename = tf.placeholder(tf.dtypes.string)
 
     def get_ops(self, filename):
@@ -88,8 +95,8 @@ class LoadWav(Ops):
 
 
 class EncodePNG(Ops):
-    def __init__(self):
-        super().__init__()
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.image = tf.placeholder(tf.dtypes.uint8, (None, None, None))
 
     def get_ops(self, image):
@@ -102,8 +109,8 @@ class EncodePNG(Ops):
 
 
 class Spectrogram(Ops):
-    def __init__(self):
-        super().__init__()
+    # noinspection PyAttributeOutsideInit
+    def set_placeholder(self):
         self.waveform = tf.placeholder(tf.dtypes.float32)
 
     def get_ops(self, waveform, window_size, stride):
