@@ -130,7 +130,7 @@ class Segment:
         frame_index = random.choice(frame_positive_indices)
 
         audio_positive_indices = range(frame_index - self.frame_rate + 1, frame_index + 1)
-        audio_index = max(0, min(random.choice(audio_positive_indices), len(self)))
+        audio_index = max(0, random.choice(audio_positive_indices))
 
         return frame_index, audio_index
 
@@ -145,7 +145,7 @@ class Segment:
         negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
         negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
         audio_negative_indices = negative_lower_indices + negative_upper_indices
-        audio_index = max(0, min(random.choice(audio_negative_indices), len(self)))
+        audio_index = max(0, random.choice(audio_negative_indices))
 
         negative_indices = [frame_index, audio_index]
         random.shuffle(negative_indices)
