@@ -5,6 +5,7 @@ import random
 from functools import reduce
 from typing import Union, List
 
+import math
 import pandas as pd
 
 from core import ops
@@ -142,7 +143,7 @@ class Segment:
         frame_index = random.choice(frame_positive_indices)
 
         negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
-        negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self)))
+        negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
         audio_negative_indices = negative_lower_indices + negative_upper_indices
         audio_index = max(0, min(random.choice(audio_negative_indices), len(self)))
 
@@ -169,7 +170,8 @@ class Segment:
         return False
 
     def __len__(self):
-        return int((self.duration - 1) * self.frame_rate)
+        waveform_end = math.floor(len(self.waveform.audio) / self.sample_rate)
+        return (waveform_end - 1) * self.frame_rate
 
 
 class SegmentsWrapper:
