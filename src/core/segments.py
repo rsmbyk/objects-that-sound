@@ -20,7 +20,7 @@ class Segment:
         self.end_seconds = end_seconds
         self.positive_labels = positive_labels
 
-        self.__waveform = None
+        self.__audio_len = None
         self.__sample_rate = None
 
     @property
@@ -76,7 +76,9 @@ class Segment:
 
     @property
     def sample_rate(self):
-        return self.waveform.sample_rate
+        if self.__sample_rate is None:
+            self.__sample_rate = self.waveform.sample_rate
+        return self.__sample_rate
 
     @property
     def start_frames(self):
@@ -101,15 +103,20 @@ class Segment:
         return int(self.get_seconds(frame_index) * self.sample_rate)
 
     @property
+    def waveform_length(self):
+        if self.__audio_len is None:
+            self.__audio_len = len(self.waveform.audio)
+        return self.__audio_len
+
+    @property
     def waveform(self):
         if not os.path.exists(self.wav):
-            ops.extract_audio(self.raw,
-                              self.wav)
+            ops.extract_audio(self.raw, self.wav)
 
-        if not self.__waveform:
-            self.__waveform = tp.load_wav(self.wav)
-
-        return self.__waveform
+        waveform_ = tp.load_wav(self.wav)
+        self.__audio_len = len(waveform_.audio)
+        self.__sample_rate = waveform_.sample_rate
+        return waveform_
 
     def load_frame(self, index):
         if not os.path.exists(self.frame(index)):
@@ -170,7 +177,7 @@ class Segment:
         return False
 
     def __len__(self):
-        waveform_end = math.floor(len(self.waveform.audio) / self.sample_rate)
+        waveform_end = math.floor(self.waveform_length / self.sample_rate)
         return (waveform_end - 1) * self.frame_rate
 
 
