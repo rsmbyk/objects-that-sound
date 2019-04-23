@@ -1,7 +1,6 @@
 import os
 import shutil
 from contextlib import contextmanager
-from copy import copy
 
 import math
 import numpy as np
@@ -14,42 +13,58 @@ from core.segments import Segment
 
 @contextmanager
 def tempdir(segments):
-    for segment in segments:
-        os.makedirs(segment.dir, exist_ok=True)
-    yield len(segments)
-    for segment in segments:
-        if os.path.exists(segment.dir):
-            shutil.rmtree(segment.dir)
+    if isinstance(segments, str):
+        os.makedirs(segments, exist_ok=True)
+        yield segments
+        if os.path.exists(segments):
+            shutil.rmtree(segments)
+    else:
+        for segment in segments:
+            os.makedirs(segment.dir, exist_ok=True)
+        yield len(segments)
+        for segment in segments:
+            if os.path.exists(segment.dir):
+                shutil.rmtree(segment.dir)
 
 
 @contextmanager
 def copy_raw_file(segments):
-    files = list()
-    for segment in segments:
-        files.append(
-            shutil.copyfile('tests/data/segments/0qZ3tI4nAZE.mp4', '{}.mp4'.format(segment.raw_prefix)))
-    yield files
-    for file in files:
-        if os.path.exists(file):
-            os.remove(file)
+    if isinstance(segments, str):
+        yield shutil.copy('tests/data/segments/0qZ3tI4nAZE.mp4', segments)
+        shutil.rmtree(segments)
+    else:
+        files = list()
+        for segment in segments:
+            files.append(
+                shutil.copyfile('tests/data/segments/0qZ3tI4nAZE.mp4', '{}.mp4'.format(segment.raw_prefix)))
+        yield files
+        for file in files:
+            if os.path.exists(file):
+                os.remove(file)
 
 
 @pytest.fixture
 def segments():
-    return 100 * [Segment(root_dir='tests/.temp/segments',
-                          ytid='0qZ3tI4nAZE',
-                          start_seconds=6.000,
-                          end_seconds=16.000,
-                          positive_labels=['/m/07qrkrw', '/m/09x0r'])]
+    segments_dir = 'tests/.temp/segments/0qZ3tI4nAZE'
+    with tempdir(segments_dir):
+        with copy_raw_file(segments_dir):
+            return 100 * [Segment(root_dir='tests/.temp/segments',
+                                  ytid='0qZ3tI4nAZE',
+                                  start_seconds=6.000,
+                                  end_seconds=16.000,
+                                  positive_labels=['/m/07qrkrw', '/m/09x0r'])]
 
 
 @pytest.fixture
 def segment():
-    return Segment(root_dir='tests/.temp/segments',
-                   ytid='0qZ3tI4nAZE',
-                   start_seconds=6.000,
-                   end_seconds=16.000,
-                   positive_labels=['/m/07qrkrw', '/m/09x0r'])
+    segments_dir = 'tests/.temp/segments/0qZ3tI4nAZE'
+    with tempdir(segments_dir):
+        with copy_raw_file(segments_dir):
+            return Segment(root_dir='tests/.temp/segments',
+                           ytid='0qZ3tI4nAZE',
+                           start_seconds=6.000,
+                           end_seconds=16.000,
+                           positive_labels=['/m/07qrkrw', '/m/09x0r'])
 
 
 @pytest.fixture
@@ -139,9 +154,11 @@ def test_getitem(segments, model):
 
 
 def test_getitem_with_unavailable_negative_segment(segments, model):
-    segments[0] = copy(segments[0])
-    segments[0].start_seconds = 0
-    segments[0].end_seconds = 20
+    cp = segments[0]
+    with tempdir(cp.dir):
+        with copy_raw_file(cp.dir):
+            segments[0] = Segment(cp.root_dir, cp.ytid, 0, 20, [])
+
     with tempdir(segments):
         with copy_raw_file(segments):
             generator = SegmentsGenerator(segments, model, 16)

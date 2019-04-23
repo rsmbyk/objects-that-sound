@@ -1,6 +1,26 @@
+import os
+import shutil
+import time
+from contextlib import contextmanager
+
+import pandas as pd
 import pytest
 
 from core.segments import SegmentsWrapper
+
+
+@contextmanager
+def tempdir(path):
+    os.makedirs(path, exist_ok=True)
+    yield path
+    shutil.rmtree(path)
+
+
+@contextmanager
+def copy_raw_file(to):
+    to = os.path.join(to, os.path.basename(to) + '.mp4')
+    yield shutil.copyfile('tests/data/segments/0qZ3tI4nAZE.mp4', to)
+    os.remove(to)
 
 
 @pytest.fixture
@@ -20,8 +40,46 @@ def test_non_existing_segments_file():
 
 @pytest.fixture
 def segments():
-    return SegmentsWrapper('tests/data/segments/test.csv',
-                           'tests/.temp/segments')
+    s = pd.read_csv('tests/data/segments/test.csv',
+                    sep=', ',
+                    header=None,
+                    engine='python')
+
+    def multi_tempdir(i=0):
+        if i < len(s):
+            with tempdir(os.path.join('tests/.temp/segments', s[0][i])):
+                with copy_raw_file(os.path.join('tests/.temp/segments', s[0][i])):
+                    return multi_tempdir(i + 1)
+        else:
+            segments_wrapper = SegmentsWrapper('tests/data/segments/test.csv',
+                                               'tests/.temp/segments')
+            time.sleep(20)
+            assert segments_wrapper.segments is not None
+            return segments_wrapper
+
+    return multi_tempdir()
+
+
+@pytest.fixture
+def segments_with_lot_of_comments():
+    s = pd.read_csv('tests/data/segments/test.csv',
+                    sep=', ',
+                    header=None,
+                    engine='python')
+
+    def multi_tempdir(i=0):
+        if i < len(s):
+            with tempdir(os.path.join('tests/.temp/segments', s[0][i])):
+                with copy_raw_file(os.path.join('tests/.temp/segments', s[0][i])):
+                    return multi_tempdir(i + 1)
+        else:
+            segments_wrapper = SegmentsWrapper('tests/data/segments/lot_of_comments.csv',
+                                               'tests/.temp/segments')
+            time.sleep(20)
+            assert segments_wrapper.segments is not None
+            return segments_wrapper
+
+    return multi_tempdir()
 
 
 def test_create_segment_wrapper(segments, test_segments_file):
@@ -42,9 +100,8 @@ def test_len(segments):
     assert len(segments) == 25
 
 
-def test_load_segments_with_lot_of_segments(test_segments_file_with_lot_of_comments):
-    segments = SegmentsWrapper(test_segments_file_with_lot_of_comments, None)
-    assert len(segments) == 25
+def test_load_segments_with_lot_of_segments(segments_with_lot_of_comments):
+    assert len(segments_with_lot_of_comments) == 25
 
 
 def test_to_dict(segments):

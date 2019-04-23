@@ -24,7 +24,9 @@ def tempmove(src, dst):
 
 
 @contextmanager
-def copy_raw_file(to):
+def copy_raw_file(to, copy_attributes=True):
+    if copy_attributes:
+        shutil.copy('tests/data/segments/0qZ3tI4nAZE.json', to)
     yield shutil.copy('tests/data/segments/0qZ3tI4nAZE.mp4', to)
     shutil.rmtree(to)
 
@@ -41,11 +43,14 @@ def test_root_dir():
 
 @pytest.fixture
 def segment():
-    return Segment(root_dir='tests/.temp/segments',
-                   ytid='0qZ3tI4nAZE',
-                   start_seconds=6.000,
-                   end_seconds=16.000,
-                   positive_labels=['/m/07qrkrw', '/m/09x0r'])
+    segment_dir = 'tests/.temp/segments/0qZ3tI4nAZE'
+    with tempdir(segment_dir):
+        with copy_raw_file(segment_dir):
+            return Segment(root_dir='tests/.temp/segments',
+                           ytid='0qZ3tI4nAZE',
+                           start_seconds=6.000,
+                           end_seconds=16.000,
+                           positive_labels=['/m/07qrkrw', '/m/09x0r'])
 
 
 @pytest.fixture
@@ -57,12 +62,23 @@ def test_segment():
 
 
 def test_properties(test_root_dir, test_segment):
-    segment = Segment(test_root_dir, **test_segment)
-    assert segment.root_dir == test_root_dir
-    assert segment.ytid == test_segment['ytid']
-    assert segment.start_seconds == test_segment['start_seconds']
-    assert segment.end_seconds == test_segment['end_seconds']
-    assert segment.positive_labels == test_segment['positive_labels']
+    segment_dir = os.path.join(test_root_dir, '0qZ3tI4nAZE')
+    with tempdir(segment_dir):
+        with copy_raw_file(segment_dir):
+            segment = Segment(test_root_dir, **test_segment)
+            assert segment.root_dir == test_root_dir
+            assert segment.ytid == test_segment['ytid']
+            assert segment.start_seconds == test_segment['start_seconds']
+            assert segment.end_seconds == test_segment['end_seconds']
+            assert segment.positive_labels == test_segment['positive_labels']
+
+
+def test_attributes_file_should_be_created_if_not_exists(test_root_dir, test_segment):
+    segment_dir = os.path.join(test_root_dir, '0qZ3tI4nAZE')
+    with tempdir(segment_dir):
+        with copy_raw_file(segment_dir, False):
+            segment = Segment(test_root_dir, **test_segment)
+            assert os.path.exists(segment.attrs_file)
 
 
 def test_dir_should_be_inside_root_dir(segment, test_root_dir):
@@ -145,6 +161,10 @@ def test_wav_should_be_in_the_same_folder_as_raw(segment):
     assert os.path.dirname(segment.wav) == segment.dir
 
 
+def test_attrs_file_should_be_in_the_same_directory_as_raw(segment):
+    assert os.path.dirname(segment.attrs_file) == segment.dir
+
+
 def test_frame_should_be_inside_frames_dir(segment):
     cp = os.path.commonprefix([segment.frame(0), segment.frames_dir])
     assert cp == segment.frames_dir
@@ -157,7 +177,7 @@ def test_spectrogram_should_be_inside_frames_dir(segment):
 
 def test_duration(segment):
     with tempdir(segment.dir):
-        with copy_raw_file(segment.dir):
+        with copy_raw_file(segment.dir, False):
             assert segment.duration == 15.929
 
 
@@ -220,6 +240,20 @@ def test_len_should_add_padding_at_end(segment):
             assert len(segment) < int(segment.duration) * segment.frame_rate
 
 
+def test_wavelength(segment):
+    with tempdir(segment.dir):
+        with copy_raw_file(segment.dir, False):
+            assert segment.wavelength == 764587
+
+
+def test_waveform(segment):
+    with tempdir(segment.dir):
+        with copy_raw_file(segment.dir):
+            waveform = segment.waveform
+            assert waveform.sample_rate == segment.sample_rate
+            assert len(waveform.audio) == segment.wavelength
+
+
 def test_load_frame(segment):
     with tempdir(segment.dir):
         with copy_raw_file(segment.dir):
@@ -232,6 +266,28 @@ def test_load_spectrogram(segment):
         with copy_raw_file(segment.dir):
             assert segment.load_spectrogram(0).shape == (257, 199, 1)
             assert segment.load_spectrogram(len(segment) - 1).shape == (257, 199, 1)
+
+
+def test_positive_indices_should_be_in_between_start_and_end_seconds(segment):
+    assert segment.start_frames == min(segment.positive_indices)
+    assert segment.end_frames >= max(segment.positive_indices)
+
+
+def test_positive_indices_should_contains_all_indices(segment):
+    assert len(segment.positive_indices) <= 250
+
+
+def test_positive_indices_should_not_contains_duplicates(segment):
+    assert len(set(segment.positive_indices)) == len(segment.positive_indices)
+
+
+def test_negative_indices_should_be_outside_start_and_end_seconds(segment):
+    assert segment.start_frames not in segment.negative_indices
+    assert segment.end_frames not in segment.negative_indices
+
+
+def test_negative_indices_should_not_contains_duplicates(segment):
+    assert len(set(segment.negative_indices)) == len(segment.negative_indices)
 
 
 def test_get_positive_sample_index_should_be_in_1_second_distance(segment):
@@ -295,7 +351,9 @@ def test_get_negative_sample(segment):
 
 
 def test_equality(segment, test_segment):
-    assert segment == Segment(None, **test_segment)
+    with tempdir(segment.dir):
+        with copy_raw_file(segment.dir):
+            assert segment == Segment(segment.root_dir, **test_segment)
 
 
 def test_equality_against_str(segment):

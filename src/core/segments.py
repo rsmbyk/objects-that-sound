@@ -1,5 +1,6 @@
 import glob
 import io
+import json
 import os
 import random
 from functools import reduce
@@ -20,8 +21,42 @@ class Segment:
         self.end_seconds = end_seconds
         self.positive_labels = positive_labels
 
-        self.__audio_len = None
-        self.__sample_rate = None
+        self.__duration = None
+        self.__wavelength = None
+
+        self.load_attributes()
+
+        self.positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
+        negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
+        negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
+        self.negative_indices = negative_lower_indices + negative_upper_indices
+
+    def load_attributes(self, update=False):
+        if not os.path.exists(self.attrs_file):
+            open(self.attrs_file, 'w')
+
+        with open(self.attrs_file, 'r') as attrs_file:
+            try:
+                attrs = json.load(attrs_file)
+            except json.JSONDecodeError:
+                attrs = dict()
+
+        attr_names = 'start_seconds', 'end_seconds', 'positive_labels', 'duration', 'wavelength'
+        cached_attrs = 'duration', 'wavelength'
+        changed = False
+
+        for name in attr_names:
+            if name not in attrs or update:
+                changed = True
+                attr_value = getattr(self, name)
+                attrs[name] = attr_value
+
+                if name in cached_attrs:
+                    setattr(self, '__' + name, attr_value)
+
+        if changed:
+            with open(self.attrs_file, 'w') as attrs_file:
+                json.dump(attrs, attrs_file, indent=4)
 
     @property
     def dir(self):
@@ -59,15 +94,15 @@ class Segment:
     def wav(self):
         return os.path.join(self.dir, '{}.wav'.format(self.ytid))
 
+    @property
+    def attrs_file(self):
+        return os.path.join(self.dir, '{}.json'.format(self.ytid))
+
     def frame(self, index):
         return os.path.join(self.frames_dir, '{}.jpg'.format(index))
 
     def spectrogram(self, index):
         return os.path.join(self.spectrograms_dir, '{}.png'.format(index))
-
-    @property
-    def duration(self):
-        return ops.get_video_duration(self.raw)
 
     @property
     def frame_rate(self):
@@ -76,9 +111,8 @@ class Segment:
 
     @property
     def sample_rate(self):
-        if self.__sample_rate is None:
-            self.__sample_rate = self.waveform.sample_rate
-        return self.__sample_rate
+        # TODO: Do not use constant value
+        return 48000
 
     @property
     def start_frames(self):
@@ -103,20 +137,22 @@ class Segment:
         return int(self.get_seconds(frame_index) * self.sample_rate)
 
     @property
-    def waveform_length(self):
-        if self.__audio_len is None:
-            self.__audio_len = len(self.waveform.audio)
-        return self.__audio_len
+    def duration(self):
+        if self.__duration is None:
+            self.__duration = ops.get_video_duration(self.raw)
+        return self.__duration
+
+    @property
+    def wavelength(self):
+        if self.__wavelength is None:
+            self.__wavelength = len(self.waveform.audio)
+        return self.__wavelength
 
     @property
     def waveform(self):
         if not os.path.exists(self.wav):
             ops.extract_audio(self.raw, self.wav)
-
-        waveform_ = tp.load_wav(self.wav)
-        self.__audio_len = len(waveform_.audio)
-        self.__sample_rate = waveform_.sample_rate
-        return waveform_
+        return tp.load_wav(self.wav)
 
     def load_frame(self, index):
         if not os.path.exists(self.frame(index)):
@@ -133,8 +169,7 @@ class Segment:
         return tp.load_image(self.spectrogram(index))
 
     def get_positive_sample_index(self):
-        frame_positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
-        frame_index = random.choice(frame_positive_indices)
+        frame_index = random.choice(self.positive_indices)
 
         audio_positive_indices = range(frame_index - self.frame_rate + 1, frame_index + 1)
         audio_index = max(0, random.choice(audio_positive_indices))
@@ -146,13 +181,8 @@ class Segment:
         return self.load_frame(frame_index), self.load_spectrogram(audio_index)
 
     def get_negative_sample_index(self):
-        frame_positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
-        frame_index = random.choice(frame_positive_indices)
-
-        negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
-        negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
-        audio_negative_indices = negative_lower_indices + negative_upper_indices
-        audio_index = max(0, random.choice(audio_negative_indices))
+        frame_index = random.choice(self.positive_indices)
+        audio_index = max(0, random.choice(self.negative_indices))
 
         negative_indices = [frame_index, audio_index]
         random.shuffle(negative_indices)
@@ -177,7 +207,7 @@ class Segment:
         return False
 
     def __len__(self):
-        waveform_end = math.floor(self.waveform_length / self.sample_rate)
+        waveform_end = math.floor(self.wavelength / self.sample_rate)
         return (waveform_end - 1) * self.frame_rate
 
 
