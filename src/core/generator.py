@@ -88,3 +88,9 @@ class SegmentsGenerator(Sequence):
 
     def __len__(self):
         return math.ceil(len(self.segments) / self.batch_size)
+
+
+class ValidationGenerator(SegmentsGenerator):
+    def __initialize_augmentors(self):
+        self.frame_augmentor = aug.ValidationVisionAugmentor(self.model.vision_input_shape)
+        self.audio_augmentor = aug.AudioAugmentor(self.model.audio_input_shape[:2])

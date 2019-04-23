@@ -38,3 +38,8 @@ class AudioAugmentor(Ops):
 
     def parse(self, spectrogram):
         return {self.spectrogram: spectrogram}
+
+
+class ValidationVisionAugmentor(VisionAugmentor):
+    def get_ops(self, frame):
+        return tf.image.random_crop(self.frame, self.shape)
