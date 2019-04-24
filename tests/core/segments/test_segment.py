@@ -1,3 +1,4 @@
+import json
 import random
 
 import pytest
@@ -10,6 +11,21 @@ from util import youtube as yt
 @pytest.fixture
 def test_raw_file():
     return 'tests/data/segments/0qZ3tI4nAZE.mp4'
+
+
+@pytest.fixture
+def test_attributes_file():
+    return 'tests/data/segments/0qZ3tI4nAZE.json'
+
+
+@pytest.fixture
+def test_incomplete_attributes_file():
+    return 'tests/data/segments/incomplete.json'
+
+
+@pytest.fixture
+def test_invalid_attributes_file():
+    return 'tests/data/segments/invalid.json'
 
 
 @pytest.fixture
@@ -41,6 +57,59 @@ def test_properties(root_dir, segment_dict):
     assert segment.start_seconds == segment_dict['start_seconds']
     assert segment.end_seconds == segment_dict['end_seconds']
     assert segment.positive_labels == segment_dict['positive_labels']
+
+
+def test_pre_load_attributes_file(root_dir, test_attributes_file, segment_dict):
+    with temp_dir(os.path.join(root_dir, segment_dict['ytid'])):
+        with temp_copy(test_attributes_file, os.path.join(root_dir, segment_dict['ytid'])):
+            segment = Segment(root_dir, **segment_dict)
+            assert segment.duration == 15.929
+            assert segment.wavelength == 764587
+
+
+def test_load_attributes_should_overwrite_current_values(test_attributes_file, segment):
+    with temp_dir(segment.dir):
+        with temp_copy(test_attributes_file, segment.dir):
+            segment._Segment__duration = 0
+            segment._Segment__wavelength = 0
+            segment.load_attributes()
+            assert segment.duration == 15.929
+            assert segment.wavelength == 764587
+
+
+def test_load_attributes_with_invalid_content(test_invalid_attributes_file, segment):
+    segment._Segment__duration = 0
+    with temp_dir(segment.dir):
+        with temp_copy_file(test_invalid_attributes_file, segment.attrs_file):
+            segment.load_attributes()
+            assert segment.duration == 0
+
+
+def test_save_attribute(test_incomplete_attributes_file, segment):
+    with temp_dir(segment.dir):
+        with temp_copy_file(test_incomplete_attributes_file, segment.attrs_file):
+            segment.save_attribute('duration', 20)
+
+            with open(segment.attrs_file) as attrs_file:
+                attrs = json.load(attrs_file)
+                assert attrs['duration'] == 20
+
+
+def test_save_attribute_should_create_file_if_not_exists(segment):
+    with temp_dir(segment.dir):
+        assert not os.path.exists(segment.attrs_file)
+        segment.save_attribute('duration', 20)
+        assert os.path.exists(segment.attrs_file)
+
+
+def test_save_attribute_should_not_create_file_if_segment_dir_does_not_exists(segment):
+    segment.save_attribute('duration', 20)
+    assert not os.path.exists(segment.attrs_file)
+
+
+def test_save_attribute_with_invalid_key(segment):
+    with pytest.raises(ValueError):
+        segment.save_attribute('invalid_key', 20)
 
 
 def test_dir_should_be_inside_root_dir(segment, root_dir):

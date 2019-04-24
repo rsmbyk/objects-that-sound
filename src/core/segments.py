@@ -14,6 +14,14 @@ from util import tensorplow as tp, youtube as yt
 
 
 class Segment:
+    attr_names = [
+        'start_seconds',
+        'end_seconds',
+        'positive_labels',
+        'duration',
+        'wavelength'
+    ]
+
     def __init__(self, root_dir, ytid, start_seconds, end_seconds, positive_labels):
         self.root_dir = root_dir
         self.ytid = ytid
@@ -23,40 +31,46 @@ class Segment:
 
         self.__duration = None
         self.__wavelength = None
+        self.__positive_indices = None
+        self.__negative_indices = None
 
         self.load_attributes()
 
-        self.positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
-        negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
-        negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
-        self.negative_indices = negative_lower_indices + negative_upper_indices
+    def load_attributes(self):
+        if os.path.exists(self.attrs_file):
+            with open(self.attrs_file) as attrs_file:
+                try:
+                    attrs = json.load(attrs_file)
+                except json.JSONDecodeError:
+                    attrs = dict()
 
-    def load_attributes(self, update=False):
+            for name in self.attr_names:
+                if name in attrs:
+                    setattr(self, '_Segment__' + name, attrs[name])
+
+    def save_attribute(self, key, value):
+        if key not in self.attr_names:
+            raise ValueError('key {} can\'t be saved to attributes file'.format(key))
+
+        if not os.path.exists(self.dir):
+            return
+
         if not os.path.exists(self.attrs_file):
-            open(self.attrs_file, 'w')
+            with open(self.attrs_file, 'w'):
+                # to make sure the file is created
+                pass
 
-        with open(self.attrs_file, 'r') as attrs_file:
+        with open(self.attrs_file) as attrs_file:
             try:
                 attrs = json.load(attrs_file)
             except json.JSONDecodeError:
                 attrs = dict()
 
-        attr_names = 'start_seconds', 'end_seconds', 'positive_labels', 'duration', 'wavelength'
-        cached_attrs = 'duration', 'wavelength'
-        changed = False
+        if key not in attrs:
+            attrs[key] = value
 
-        for name in attr_names:
-            if name not in attrs or update:
-                changed = True
-                attr_value = getattr(self, name)
-                attrs[name] = attr_value
-
-                if name in cached_attrs:
-                    setattr(self, '__' + name, attr_value)
-
-        if changed:
-            with open(self.attrs_file, 'w') as attrs_file:
-                json.dump(attrs, attrs_file, indent=4)
+        with open(self.attrs_file, 'w') as attrs_file:
+            json.dump(attrs, attrs_file, indent=4)
 
     @property
     def dir(self):
@@ -137,6 +151,20 @@ class Segment:
         return int(self.get_seconds(frame_index) * self.sample_rate)
 
     @property
+    def positive_indices(self):
+        if self.__positive_indices is None:
+            self.__positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
+        return self.__positive_indices
+
+    @property
+    def negative_indices(self):
+        if self.__negative_indices is None:
+            negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
+            negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
+            self.__negative_indices = negative_lower_indices + negative_upper_indices
+        return self.__negative_indices
+
+    @property
     def duration(self):
         if self.__duration is None:
             self.__duration = ops.get_video_duration(self.raw)
@@ -198,6 +226,12 @@ class Segment:
             return self.raw is not None
         except FileNotFoundError:
             return False
+
+    def __setattr__(self, key, value):
+        super().__setattr__(key, value)
+        key = key.strip('_')
+        if key in self.attr_names:
+            self.save_attribute(key, value)
 
     def __eq__(self, other):
         if isinstance(other, Segment):
