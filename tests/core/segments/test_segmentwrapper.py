@@ -1,94 +1,42 @@
-import os
-import shutil
-import time
-from contextlib import contextmanager
-
-import pandas as pd
 import pytest
 
 from core.segments import SegmentsWrapper
 
 
-@contextmanager
-def tempdir(path):
-    os.makedirs(path, exist_ok=True)
-    yield path
-    shutil.rmtree(path)
-
-
-@contextmanager
-def copy_raw_file(to):
-    to = os.path.join(to, os.path.basename(to) + '.mp4')
-    yield shutil.copyfile('tests/data/segments/0qZ3tI4nAZE.mp4', to)
-    os.remove(to)
-
-
 @pytest.fixture
-def test_segments_file():
+def segments_file():
     return 'tests/data/segments/test.csv'
 
 
 @pytest.fixture
-def test_segments_file_with_lot_of_comments():
+def segments_file_with_lot_of_comments():
     return 'tests/data/segments/lot_of_comments.csv'
 
 
 @pytest.fixture
-def test_non_existing_segments_file():
+def non_existing_segments_file():
     return 'tests/data/segments/missing.csv'
 
 
 @pytest.fixture
 def segments():
-    s = pd.read_csv('tests/data/segments/test.csv',
-                    sep=', ',
-                    header=None,
-                    engine='python')
-
-    def multi_tempdir(i=0):
-        if i < len(s):
-            with tempdir(os.path.join('tests/.temp/segments', s[0][i])):
-                with copy_raw_file(os.path.join('tests/.temp/segments', s[0][i])):
-                    return multi_tempdir(i + 1)
-        else:
-            segments_wrapper = SegmentsWrapper('tests/data/segments/test.csv',
-                                               'tests/.temp/segments')
-            time.sleep(20)
-            assert segments_wrapper.segments is not None
-            return segments_wrapper
-
-    return multi_tempdir()
+    return SegmentsWrapper('tests/data/segments/test.csv',
+                           'tests/.temp/segments')
 
 
 @pytest.fixture
 def segments_with_lot_of_comments():
-    s = pd.read_csv('tests/data/segments/test.csv',
-                    sep=', ',
-                    header=None,
-                    engine='python')
-
-    def multi_tempdir(i=0):
-        if i < len(s):
-            with tempdir(os.path.join('tests/.temp/segments', s[0][i])):
-                with copy_raw_file(os.path.join('tests/.temp/segments', s[0][i])):
-                    return multi_tempdir(i + 1)
-        else:
-            segments_wrapper = SegmentsWrapper('tests/data/segments/lot_of_comments.csv',
-                                               'tests/.temp/segments')
-            time.sleep(20)
-            assert segments_wrapper.segments is not None
-            return segments_wrapper
-
-    return multi_tempdir()
+    return SegmentsWrapper('tests/data/segments/lot_of_comments.csv',
+                           'tests/.temp/segments')
 
 
-def test_create_segment_wrapper(segments, test_segments_file):
-    assert segments.filename == test_segments_file
+def test_create_segment_wrapper(segments, segments_file):
+    assert segments.filename == segments_file
 
 
-def test_create_with_non_existing_segments_file(test_non_existing_segments_file):
+def test_create_with_non_existing_segments_file(non_existing_segments_file):
     with pytest.raises(FileNotFoundError):
-        assert SegmentsWrapper(test_non_existing_segments_file, None)
+        assert SegmentsWrapper(non_existing_segments_file, None)
 
 
 def test_create_with_invalid_filename_type():

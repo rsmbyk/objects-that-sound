@@ -1,7 +1,6 @@
 import glob
 import logging
 import os
-import shutil
 from functools import reduce
 
 import pytest

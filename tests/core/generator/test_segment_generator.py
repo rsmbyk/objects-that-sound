@@ -1,6 +1,4 @@
-import os
-import shutil
-from contextlib import contextmanager
+from copy import copy
 
 import math
 import numpy as np
@@ -9,62 +7,35 @@ import pytest
 from core.generator import SegmentsGenerator
 from core.models import AVOLNet
 from core.segments import Segment
+from tests.utils import *
 
 
-@contextmanager
-def tempdir(segments):
-    if isinstance(segments, str):
-        os.makedirs(segments, exist_ok=True)
-        yield segments
-        if os.path.exists(segments):
-            shutil.rmtree(segments)
-    else:
-        for segment in segments:
-            os.makedirs(segment.dir, exist_ok=True)
-        yield len(segments)
-        for segment in segments:
-            if os.path.exists(segment.dir):
-                shutil.rmtree(segment.dir)
+def map_dir(segments):
+    return list(map(lambda s: s.dir, segments))
 
 
-@contextmanager
-def copy_raw_file(segments):
-    if isinstance(segments, str):
-        yield shutil.copy('tests/data/segments/0qZ3tI4nAZE.mp4', segments)
-        shutil.rmtree(segments)
-    else:
-        files = list()
-        for segment in segments:
-            files.append(
-                shutil.copyfile('tests/data/segments/0qZ3tI4nAZE.mp4', '{}.mp4'.format(segment.raw_prefix)))
-        yield files
-        for file in files:
-            if os.path.exists(file):
-                os.remove(file)
+def map_raw(segments):
+    return list(map(lambda s: '{}.mp4'.format(os.path.join(s.dir, s.ytid)), segments))
 
 
 @pytest.fixture
-def segments():
-    segments_dir = 'tests/.temp/segments/0qZ3tI4nAZE'
-    with tempdir(segments_dir):
-        with copy_raw_file(segments_dir):
-            return 100 * [Segment(root_dir='tests/.temp/segments',
-                                  ytid='0qZ3tI4nAZE',
-                                  start_seconds=6.000,
-                                  end_seconds=16.000,
-                                  positive_labels=['/m/07qrkrw', '/m/09x0r'])]
+def test_raw_file():
+    return 'tests/data/segments/0qZ3tI4nAZE.mp4'
 
 
 @pytest.fixture
 def segment():
-    segments_dir = 'tests/.temp/segments/0qZ3tI4nAZE'
-    with tempdir(segments_dir):
-        with copy_raw_file(segments_dir):
-            return Segment(root_dir='tests/.temp/segments',
-                           ytid='0qZ3tI4nAZE',
-                           start_seconds=6.000,
-                           end_seconds=16.000,
-                           positive_labels=['/m/07qrkrw', '/m/09x0r'])
+    with temp_dir('tests/.temp/segments/0qZ3tI4nAZE'):
+        return Segment(root_dir='tests/.temp/segments',
+                       ytid='0qZ3tI4nAZE',
+                       start_seconds=6.000,
+                       end_seconds=16.000,
+                       positive_labels=['/m/07qrkrw', '/m/09x0r'])
+
+
+@pytest.fixture
+def segments(segment):
+    return 100 * [segment]
 
 
 @pytest.fixture
@@ -82,9 +53,9 @@ def test_with_invalid_segments_item_type(model):
         assert SegmentsGenerator([0], model)
 
 
-def test_with_single_segment(segment, model):
-    with tempdir([segment]):
-        with copy_raw_file([segment]):
+def test_with_single_segment(test_raw_file, segment, model):
+    with temp_dir(segment.dir):
+        with temp_copy(test_raw_file, segment.dir):
             assert len(SegmentsGenerator(segment, model).segments) == 1
 
 
@@ -98,69 +69,68 @@ def test_with_unavailable_segments(segments, model):
         assert SegmentsGenerator(segments, model)
 
 
-def test_batch_size_default(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_batch_size_default(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model)
             assert generator.batch_size == 16
             generator = SegmentsGenerator(segments, model, None)
             assert generator.batch_size == 16
 
 
-def test_batch_size_invalid_type(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_batch_size_invalid_type(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             with pytest.raises(TypeError):
                 assert SegmentsGenerator(segments, model, '32')
 
 
-def test_batch_size_invalid_value(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_batch_size_invalid_value(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             with pytest.raises(ValueError):
                 assert SegmentsGenerator(segments, model, -16)
             with pytest.raises(ValueError):
                 assert SegmentsGenerator(segments, model, 0)
 
 
-def test_len(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_len(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 25)
             assert len(generator) == math.ceil(len(segments) / 25)
 
 
-def test_len_should_ceil_the_batch_count(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_len_should_ceil_the_batch_count(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
             assert len(generator) == math.ceil(len(segments) / 16)
 
 
-def test_model_with_invalid_type(segments):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_model_with_invalid_type(test_raw_file, segments):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             with pytest.raises(TypeError):
                 assert SegmentsGenerator(segments, 0)
 
 
-def test_getitem(segments, model):
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_getitem(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
             assert len(np.array(zipped)) == 32
 
 
-def test_getitem_with_unavailable_negative_segment(segments, model):
-    cp = segments[0]
-    with tempdir(cp.dir):
-        with copy_raw_file(cp.dir):
-            segments[0] = Segment(cp.root_dir, cp.ytid, 0, 20, [])
-
-    with tempdir(segments):
-        with copy_raw_file(segments):
+def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, model):
+    cp = copy(segments[0])
+    cp.start_seconds = 0
+    cp.end_seconds = 20
+    segments[0] = cp
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
