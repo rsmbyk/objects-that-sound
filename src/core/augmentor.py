@@ -1,45 +1,32 @@
 import tensorflow as tf
+from tensorflow.python.framework.errors_impl import InvalidArgumentError
 
 from util.tensorplow import Ops
 
 
 class VisionAugmentor(Ops):
     def __init__(self, shape):
-        super().__init__()
         self.shape = shape
 
-    # noinspection PyAttributeOutsideInit
-    def set_placeholder(self):
-        self.frame = tf.placeholder(tf.dtypes.uint8, (None, None, 3))
-
-    def get_ops(self, frame):
-        crop = tf.image.random_crop(self.frame, self.shape)
-        brightness = tf.image.random_brightness(crop, 0.25)
-        saturation = tf.image.random_saturation(brightness, 0.5, 1.5)
-        flip = tf.image.random_flip_left_right(saturation)
-        return flip
-
-    def parse(self, frame):
-        return {self.frame: frame}
+    def __call__(self, frame):
+        try:
+            crop = tf.image.random_crop(frame, self.shape)
+            brightness = tf.image.random_brightness(crop, 0.25)
+            saturation = tf.image.random_saturation(brightness, 0.5, 1.5)
+            flip = tf.image.random_flip_left_right(saturation)
+            return flip
+        except InvalidArgumentError:
+            raise ValueError()
 
 
 class AudioAugmentor(Ops):
     def __init__(self, shape):
-        super().__init__()
         self.shape = shape
 
-    # noinspection PyAttributeOutsideInit
-    def set_placeholder(self):
-        self.spectrogram = tf.placeholder(tf.dtypes.uint8, (None, None, 1))
-
-    def get_ops(self, spectrogram):
-        resize = tf.image.resize_images(self.spectrogram, self.shape)
-        return resize
-
-    def parse(self, spectrogram):
-        return {self.spectrogram: spectrogram}
+    def __call__(self, spectrogram):
+        return tf.image.resize(spectrogram, self.shape)
 
 
 class ValidationVisionAugmentor(VisionAugmentor):
-    def get_ops(self, frame):
-        return tf.image.random_crop(self.frame, self.shape)
+    def __call__(self, frame):
+        return tf.image.random_crop(frame, self.shape)

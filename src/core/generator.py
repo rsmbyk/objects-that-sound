@@ -80,8 +80,8 @@ class SegmentsGenerator(Sequence):
         batch_x, batch_y = zip(*batch)
         frames, spectrograms = zip(*batch_x)
 
-        frames = np.array(list(map(self.frame_augmentor, frames)))
-        spectrograms = np.array(list(map(self.audio_augmentor, spectrograms)))
+        frames = list(map(lambda x: np.array(self.frame_augmentor(x)), frames))
+        spectrograms = list(map(lambda x: np.array(self.audio_augmentor(x)), spectrograms))
         labels = np.array(batch_y)
 
         return [frames, spectrograms], labels

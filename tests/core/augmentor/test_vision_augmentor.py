@@ -38,4 +38,4 @@ def test_with_invalid_input_shape(spectrogram, vision_augmentor):
 
 def test_with_invalid_input_dims(frame, vision_augmentor):
     with pytest.raises(ValueError):
-        assert vision_augmentor(tp.run(tf.expand_dims(frame, 0)))
+        assert vision_augmentor(tf.expand_dims(frame, 0))

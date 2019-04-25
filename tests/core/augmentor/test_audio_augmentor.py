@@ -38,4 +38,4 @@ def test_with_invalid_input_shape(frame, audio_augmentor):
 
 def test_with_invalid_input_dims(spectrogram, audio_augmentor):
     with pytest.raises(ValueError):
-        assert audio_augmentor(tp.run(tf.expand_dims(spectrogram, 0)))
+        assert audio_augmentor(tf.expand_dims(spectrogram, 0))

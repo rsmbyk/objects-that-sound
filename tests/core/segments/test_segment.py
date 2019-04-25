@@ -275,7 +275,7 @@ def test_waveform(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):
             waveform = segment.waveform
-            assert waveform.sample_rate == segment.sample_rate
+            assert waveform.sample_rate.numpy() == segment.sample_rate
             assert len(waveform.audio) == segment.wavelength
 
 

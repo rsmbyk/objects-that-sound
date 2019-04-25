@@ -8,6 +8,7 @@ coverage==4.5.3
 cycler==0.10.0
 furl==2.0.0
 gast==0.2.2
+google-pasta==0.1.5
 grpcio==1.19.0
 h5py==2.9.0
 Keras-Applications==1.0.7
@@ -33,11 +34,13 @@ pywin32==224
 scipy==1.2.1
 seaborn==0.9.0
 six==1.12.0
+tb-nightly==1.14.0a20190301
 tensorboard==1.13.1
-tensorflow==1.13.1
+tensorflow==2.0.0a0
 tensorflow-estimator==1.13.0
-tensorflow-gpu==1.13.1
+tensorflow-gpu==2.0.0a0
 termcolor==1.1.0
+tf-estimator-nightly==1.14.0.dev2019030115
 Werkzeug==0.14.1
 winshell==0.6
 youtube-dl==2019.3.9

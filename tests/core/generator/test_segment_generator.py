@@ -1,7 +1,6 @@
 from copy import copy
 
 import math
-import numpy as np
 import pytest
 
 from core.generator import SegmentsGenerator
@@ -121,7 +120,7 @@ def test_getitem(test_raw_file, segments, model):
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
-            assert len(np.array(zipped)) == 32
+            assert len(zipped) == 32
 
 
 def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, model):
@@ -134,4 +133,4 @@ def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, mode
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
-            assert len(np.array(zipped)) == 31
+            assert len(zipped) == 31
