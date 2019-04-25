@@ -1,5 +1,4 @@
 import glob
-import io
 import json
 import os
 import random
@@ -269,24 +268,16 @@ class SegmentsWrapper:
     @property
     def segments(self):
         if self.__segments is None:
-            def remove_header_comments(fp):
-                while True:
-                    readline = fp.readline()
-                    if not readline.startswith('#'):
-                        return '\n'.join([readline, fp.read()])
-
-            with open(self.filename) as file:
-                content = io.StringIO(remove_header_comments(file))
-
             def to_segment(row):
                 row = [*row[1]]
                 row[-1] = row[-1].strip('"').split(',')
                 return Segment(self.root_dir, *row)
 
-            csv = pd.read_csv(content,
+            csv = pd.read_csv(self.filename,
                               sep=', ',
                               header=None,
-                              engine='python')
+                              engine='python',
+                              comment='#')
             self.__segments = list(map(to_segment, csv.iterrows()))
         return self.__segments
 
