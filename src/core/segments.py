@@ -115,7 +115,7 @@ class Segment:
         return os.path.join(self.frames_dir, '{}.jpg'.format(index))
 
     def spectrogram(self, index):
-        return os.path.join(self.spectrograms_dir, '{}.png'.format(index))
+        return os.path.join(self.spectrograms_dir, '{}.csv'.format(index))
 
     @property
     def frame_rate(self):
@@ -193,7 +193,7 @@ class Segment:
             end_index = start_index + self.sample_rate
             waveform = self.waveform.audio[start_index:end_index]
             ops.compute_spectrogram(waveform, self.spectrogram(index))
-        return tp.load_image(self.spectrogram(index))
+        return ops.load_spectrogram(self.spectrogram(index))
 
     def get_positive_sample_index(self):
         frame_index = random.choice(self.positive_indices)
