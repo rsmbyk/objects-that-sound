@@ -1,20 +1,22 @@
 import random
+from functools import reduce
 
 import math
 import numpy as np
+import tensorflow as tf
 from tensorflow.python.keras.utils import Sequence
 
-import core.augmentor as aug
+from core.augmentor import Augmentor
 from core.models import AVC
 from core.segments import SegmentsWrapper, Segment
 
 
 class SegmentsGenerator(Sequence):
-    def __init__(self, segments, model, batch_size=None):
+    def __init__(self, segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
         self.__validate_segments(segments)
         self.__validate_batch_size(batch_size)
         self.__validate_model(model)
-        self.__initialize_augmentors()
+        self.__validate_augmentors(vision_augmentor, audio_augmentor)
 
     def __validate_segments(self, segments):
         allowed_segments_types = (SegmentsWrapper, list, Segment)
@@ -55,9 +57,39 @@ class SegmentsGenerator(Sequence):
 
         self.model = model
 
-    def __initialize_augmentors(self):
-        self.frame_augmentor = aug.VisionAugmentor(self.model.vision_input_shape)
-        self.audio_augmentor = aug.AudioAugmentor(self.model.audio_input_shape[:2])
+    def __validate_augmentors(self, vision_augmentor, audio_augmentor):
+        if vision_augmentor is not None and not isinstance(vision_augmentor, Augmentor):
+            raise TypeError('\'vision_augmentor\' must be of type {}, not {}'.format(Augmentor, type(vision_augmentor)))
+
+        if audio_augmentor is not None and not isinstance(audio_augmentor, Augmentor):
+            raise TypeError('\'vision_augmentor\' must be of type {}, not {}'.format(Augmentor, type(audio_augmentor)))
+
+        self.vision_augmentor = vision_augmentor
+        self.audio_augmentor = audio_augmentor
+
+    def augment_vision(self, frame):
+        if min(np.subtract(frame.shape, self.model.vision_input_shape)[:-1]) == 0:
+            out = tf.image.random_crop(frame, self.model.vision_input_shape)
+        else:
+            resize = tf.image.resize(frame, self.model.vision_input_shape[:-1])
+            out = tf.cast(resize, tf.dtypes.uint8)
+
+        if self.vision_augmentor is not None:
+            out = self.vision_augmentor(out)
+        else:
+            out = [np.array(out)]
+
+        return out
+
+    def augment_audio(self, spectrogram):
+        out = tf.image.resize_image_with_crop_or_pad(spectrogram, *self.model.audio_input_shape[:-1])
+
+        if self.audio_augmentor is not None:
+            out = self.audio_augmentor(out)
+        else:
+            out = [np.array(out)]
+
+        return out
 
     def __getitem__(self, index):
         batch_slice = slice(index * self.batch_size, (index+1) * self.batch_size)
@@ -80,17 +112,11 @@ class SegmentsGenerator(Sequence):
         batch_x, batch_y = zip(*batch)
         frames, spectrograms = zip(*batch_x)
 
-        frames = list(map(lambda x: np.array(self.frame_augmentor(x)), frames))
-        spectrograms = list(map(lambda x: np.array(self.audio_augmentor(x)), spectrograms))
-        labels = np.array(batch_y)
+        frames = list(reduce(list.__add__, list(map(self.augment_vision, frames))))
+        spectrograms = list(reduce(list.__add__, list(map(self.augment_audio, spectrograms))))
+        labels = np.array(np.expand_dims(batch_y, -1))
 
         return [frames, spectrograms], labels
 
     def __len__(self):
         return math.ceil(len(self.segments) / self.batch_size)
-
-
-class ValidationGenerator(SegmentsGenerator):
-    def __initialize_augmentors(self):
-        self.frame_augmentor = aug.ValidationVisionAugmentor(self.model.vision_input_shape)
-        self.audio_augmentor = aug.AudioAugmentor(self.model.audio_input_shape[:2])

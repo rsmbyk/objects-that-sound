@@ -1,8 +1,11 @@
 from copy import copy
 
 import math
+import numpy as np
 import pytest
 
+from core.augmentor import Augmentor
+from core.augmentor_impl import Scale
 from core.generator import SegmentsGenerator
 from core.models import AVOLNet
 from core.segments import Segment
@@ -40,6 +43,11 @@ def segments(segment):
 @pytest.fixture
 def model():
     return AVOLNet()
+
+
+@pytest.fixture
+def augmentor():
+    return Augmentor(*(2 * [Scale(2)]))
 
 
 def test_with_invalid_segments_type():
@@ -93,6 +101,94 @@ def test_batch_size_invalid_value(test_raw_file, segments, model):
                 assert SegmentsGenerator(segments, model, 0)
 
 
+def test_vision_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, vision_augmentor=augmentor)
+            assert generator.vision_augmentor is not None
+
+
+def test_vision_augmentor_with_invalid_type(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            with pytest.raises(TypeError):
+                assert SegmentsGenerator(segments, model, vision_augmentor=1)
+
+
+def test_audio_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, audio_augmentor=augmentor)
+            assert generator.audio_augmentor is not None
+
+
+def test_audio_augmentor_with_invalid_type(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            with pytest.raises(TypeError):
+                assert SegmentsGenerator(segments, model, audio_augmentor=1)
+
+
+def test_augment_vision_should_match_model_vision_input_shape(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model)
+            target_shape = model.vision_input_shape
+            frame = np.ones((10, 10, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((10, 1000, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((1000, 10, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((1000, 1000, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+
+
+def test_augment_vision_should_match_model_vision_input_shape_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, vision_augmentor=augmentor)
+            target_shape = model.vision_input_shape
+            frame = np.ones((10, 10, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((10, 1000, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((1000, 10, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+            frame = np.ones((1000, 1000, 3))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_vision(frame)))
+
+
+def test_augment_audio_should_match_model_audio_input_shape(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model)
+            target_shape = model.audio_input_shape
+            spectrogram = np.ones((10, 10, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((10, 1000, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((1000, 10, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((1000, 1000, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+
+
+def test_augment_audio_should_match_model_audio_input_shape_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, vision_augmentor=augmentor)
+            target_shape = model.audio_input_shape
+            spectrogram = np.ones((10, 10, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((10, 1000, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((1000, 10, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+            spectrogram = np.ones((1000, 1000, 1))
+            assert all(map(lambda x: x.shape == target_shape, generator.augment_audio(spectrogram)))
+
+
 def test_len(test_raw_file, segments, model):
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
@@ -114,10 +210,10 @@ def test_model_with_invalid_type(test_raw_file, segments):
                 assert SegmentsGenerator(segments, 0)
 
 
-def test_getitem(test_raw_file, segments, model):
+def test_getitem(test_raw_file, segments, model, augmentor):
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
-            generator = SegmentsGenerator(segments, model, 16)
+            generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
             assert len(zipped) == 32
@@ -134,3 +230,31 @@ def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, mode
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
             assert len(zipped) == 31
+
+
+def test_getitem_output_shape(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            batch_x, labels = generator[0]
+            # print(np.shape(batch_x))
+            frames, spectrograms = batch_x
+            # print(np.shape(frames))
+            # print(np.shape(spectrograms))
+            assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
+            assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
+            assert all(map(lambda x: x.shape == model.output_shape, labels))
+
+
+def test_getitem_output_shape_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
+            batch_x, labels = generator[0]
+            # print(np.shape(batch_x))
+            frames, spectrograms = batch_x
+            # print(np.shape(frames))
+            # print(np.shape(spectrograms))
+            assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
+            assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
+            assert all(map(lambda x: x.shape == model.output_shape, labels))
