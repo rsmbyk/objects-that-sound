@@ -115,7 +115,7 @@ class Segment:
         return os.path.join(self.frames_dir, '{}.jpg'.format(index))
 
     def spectrogram(self, index):
-        return os.path.join(self.spectrograms_dir, '{}.csv'.format(index))
+        return os.path.join(self.spectrograms_dir, '{}.npz'.format(index))
 
     @property
     def frame_rate(self):

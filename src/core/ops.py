@@ -1,7 +1,6 @@
 import os
 
-import pandas as pd
-import tensorflow as tf
+import numpy as np
 
 from util import ffmpeg, tensorplow as tp
 
@@ -51,11 +50,12 @@ def compute_spectrogram(waveform, output):
                          window_length=0.01,
                          overlap=0.5)
 
-    squeeze = tf.squeeze(spc, -1)
-    df = pd.DataFrame(squeeze.numpy())
-    df.to_csv(output, header=False, index=False)
+    squeeze = np.squeeze(spc, -1)
+    float32 = squeeze.astype(np.float32)
+    np.savez_compressed(output, spectrogram=float32)
 
 
 def load_spectrogram(filename):
-    csv = pd.read_csv(filename, header=None)
-    return tf.expand_dims(csv.to_numpy(), -1)
+    npz = np.load(filename)
+    spc = npz['spectrogram']
+    return np.expand_dims(spc, -1)

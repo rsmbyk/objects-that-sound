@@ -13,7 +13,7 @@ def test_wav_file():
 
 @pytest.fixture
 def output():
-    return 'tests/.temp/ops/spectrogram.png'
+    return 'tests/.temp/ops/spectrogram.npz'
 
 
 def test_compute_spectrogram(test_wav_file, output):
