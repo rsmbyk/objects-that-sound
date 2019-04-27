@@ -44,14 +44,8 @@ def spectrogram(waveform, sample_rate, window_length, overlap):
     # compute the spectrogram
     spc = gen_audio_ops.audio_spectrogram(waveform, window_size, stride)
 
-    # custom brightness
-    mul = tf.multiply(spc, 100)
-
-    # normalize pixels
-    minimum = tf.minimum(mul, 255)
-
     # expand dims so we get the proper shape
-    expand_dims = tf.expand_dims(minimum, -1)
+    expand_dims = tf.expand_dims(spc, -1)
 
     # Tensorflow spectrogram has time along y axis and frequencies along x axis
     # so we fix that
