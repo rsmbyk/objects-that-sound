@@ -129,6 +129,42 @@ def test_audio_augmentor_with_invalid_type(test_raw_file, segments, model):
                 assert SegmentsGenerator(segments, model, audio_augmentor=1)
 
 
+def test_default_augmentor(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model)
+            assert generator.vision_augmentor is not None
+            assert generator.audio_augmentor is not None
+
+
+def test_augmentation_factor(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            assert generator.augmentation_factor == 1
+
+
+def test_augmentation_factor_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
+            assert generator.augmentation_factor == len(augmentor) * len(augmentor)
+
+
+def test_sample_size(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            assert generator.sample_size == 2 * generator.batch_size
+
+
+def test_sample_size_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
+            assert generator.sample_size == 2 * generator.batch_size * generator.augmentation_factor
+
+
 def test_augment_vision_should_match_model_vision_input_shape(test_raw_file, segments, model):
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
@@ -210,13 +246,35 @@ def test_model_with_invalid_type(test_raw_file, segments):
                 assert SegmentsGenerator(segments, 0)
 
 
+def test_zip_samples(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            frames = np.ones((2 * generator.batch_size, *model.vision_input_shape))
+            spectrograms = np.ones((2 * generator.batch_size, *model.audio_input_shape))
+            labels = np.ones((2 * generator.batch_size, *model.output_shape, 1))
+            samples = generator.zip_samples(frames, spectrograms, labels)
+            assert len(samples) == generator.sample_size
+
+
+def test_zip_samples_with_augmentor(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16, augmentor)
+            frames = np.ones((2 * generator.batch_size * len(augmentor), *model.vision_input_shape))
+            spectrograms = np.ones((2 * generator.batch_size * len(augmentor), *model.audio_input_shape))
+            labels = np.ones((2 * generator.batch_size, *model.output_shape, 1))
+            samples = generator.zip_samples(frames, spectrograms, labels)
+            assert len(samples) == generator.sample_size
+
+
 def test_getitem(test_raw_file, segments, model, augmentor):
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
-            assert len(zipped) == 32
+            assert len(zipped) == generator.sample_size
 
 
 def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, model):
@@ -229,7 +287,7 @@ def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, mode
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
             zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
-            assert len(zipped) == 31
+            assert len(zipped) == generator.sample_size - generator.augmentation_factor
 
 
 def test_getitem_output_shape(test_raw_file, segments, model):
@@ -237,10 +295,7 @@ def test_getitem_output_shape(test_raw_file, segments, model):
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
             batch_x, labels = generator[0]
-            # print(np.shape(batch_x))
             frames, spectrograms = batch_x
-            # print(np.shape(frames))
-            # print(np.shape(spectrograms))
             assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
             assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
             assert all(map(lambda x: x.shape == model.output_shape, labels))
@@ -251,10 +306,16 @@ def test_getitem_output_shape_with_augmentor(test_raw_file, segments, model, aug
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
             batch_x, labels = generator[0]
-            # print(np.shape(batch_x))
             frames, spectrograms = batch_x
-            # print(np.shape(frames))
-            # print(np.shape(spectrograms))
             assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
             assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
             assert all(map(lambda x: x.shape == model.output_shape, labels))
+
+
+def test_getitem_should_has_same_number_of_sample_for_all_inputs(test_raw_file, segments, model, augmentor):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
+            batch = generator[0]
+            zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
+            assert zipped is not None

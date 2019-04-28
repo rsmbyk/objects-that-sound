@@ -12,6 +12,8 @@ from core.segments import SegmentsWrapper, Segment
 
 
 class SegmentsGenerator(Sequence):
+    default_augmentor = Augmentor()
+
     def __init__(self, segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
         self.__validate_segments(segments)
         self.__validate_batch_size(batch_size)
@@ -64,32 +66,33 @@ class SegmentsGenerator(Sequence):
         if audio_augmentor is not None and not isinstance(audio_augmentor, Augmentor):
             raise TypeError('\'vision_augmentor\' must be of type {}, not {}'.format(Augmentor, type(audio_augmentor)))
 
-        self.vision_augmentor = vision_augmentor
-        self.audio_augmentor = audio_augmentor
+        self.vision_augmentor = vision_augmentor or self.default_augmentor
+        self.audio_augmentor = audio_augmentor or self.default_augmentor
+        self.augmentation_factor = len(self.vision_augmentor) * len(self.audio_augmentor)
+        self.sample_size = 2 * self.batch_size * self.augmentation_factor
 
     def augment_vision(self, frame):
-        if min(np.subtract(frame.shape, self.model.vision_input_shape)[:-1]) == 0:
+        if min(np.subtract(frame.shape, self.model.vision_input_shape)[:-1]) >= 0:
             out = tf.image.random_crop(frame, self.model.vision_input_shape)
         else:
             resize = tf.image.resize(frame, self.model.vision_input_shape[:-1])
             out = tf.cast(resize, tf.dtypes.uint8)
 
-        if self.vision_augmentor is not None:
-            out = self.vision_augmentor(out)
-        else:
-            out = [np.array(out)]
-
-        return out
+        return self.vision_augmentor(out)
 
     def augment_audio(self, spectrogram):
         out = tf.image.resize_image_with_crop_or_pad(spectrogram, *self.model.audio_input_shape[:-1])
+        return self.audio_augmentor(out)
 
-        if self.audio_augmentor is not None:
-            out = self.audio_augmentor(out)
-        else:
-            out = [np.array(out)]
-
-        return out
+    def zip_samples(self, frames, spectrograms, labels):
+        samples = list()
+        for i in range(len(labels)):
+            for v in range(len(self.vision_augmentor)):
+                for a in range(len(self.audio_augmentor)):
+                    samples.append((frames[v + i * len(self.vision_augmentor)],
+                                    spectrograms[a + i * len(self.audio_augmentor)],
+                                    labels[i]))
+        return samples
 
     def __getitem__(self, index):
         batch_slice = slice(index * self.batch_size, (index+1) * self.batch_size)
@@ -115,6 +118,9 @@ class SegmentsGenerator(Sequence):
         frames = list(reduce(list.__add__, list(map(self.augment_vision, frames))))
         spectrograms = list(reduce(list.__add__, list(map(self.augment_audio, spectrograms))))
         labels = np.array(np.expand_dims(batch_y, -1))
+
+        samples = self.zip_samples(frames, spectrograms, labels)
+        frames, spectrograms, labels = zip(*samples)
 
         return [frames, spectrograms], labels
 
