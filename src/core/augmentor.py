@@ -13,9 +13,6 @@ class Augmentor:
         if not all(map(lambda aug: isinstance(aug, Aug), augmentors)):
             raise TypeError('\'augmentors\' must be of type {}'.format(Aug))
 
-        if len(augmentors) == 0:
-            raise ValueError('\'augmentors\' can not be empty')
-
         self.__augmentors = augmentors
 
     def __call__(self, item):

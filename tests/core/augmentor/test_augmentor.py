@@ -26,6 +26,11 @@ def augmentor():
 
 
 @pytest.fixture
+def empty_augmentor():
+    return Augmentor()
+
+
+@pytest.fixture
 def sample_input():
     return tf.random.uniform((10, 10), maxval=10, dtype=tf.dtypes.int32)
 
@@ -39,14 +44,21 @@ def test_non_aug_augmentors():
         assert Augmentor(1)
 
 
-def test_empty_augmentors():
-    with pytest.raises(ValueError):
-        assert Augmentor()
-
-
 def test_len(augmentor):
     assert len(augmentor) == 8
 
 
 def test_output_len(augmentor):
     assert len(augmentor) == 8
+
+
+def test_empty_augmentor(empty_augmentor, sample_input):
+    assert empty_augmentor(sample_input)
+
+
+def test_len_empty_augmentor(empty_augmentor):
+    assert len(empty_augmentor) == 1
+
+
+def test_output_len_empty_augmentor(empty_augmentor, sample_input):
+    assert len(empty_augmentor(sample_input)) == 1
