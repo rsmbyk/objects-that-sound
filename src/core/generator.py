@@ -117,12 +117,12 @@ class SegmentsGenerator(Sequence):
 
         frames = list(reduce(list.__add__, list(map(self.augment_vision, frames))))
         spectrograms = list(reduce(list.__add__, list(map(self.augment_audio, spectrograms))))
-        labels = np.array(np.expand_dims(batch_y, -1))
+        labels = list(map(lambda y: np.reshape(y, self.model.output_shape), batch_y))
 
         samples = self.zip_samples(frames, spectrograms, labels)
         frames, spectrograms, labels = zip(*samples)
 
-        return [frames, spectrograms], labels
+        return [frames, spectrograms], [labels]
 
     def __len__(self):
         return math.ceil(len(self.segments) / self.batch_size)

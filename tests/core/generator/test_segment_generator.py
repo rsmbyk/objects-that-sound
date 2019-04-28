@@ -273,7 +273,7 @@ def test_getitem(test_raw_file, segments, model, augmentor):
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
             batch = generator[0]
-            zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
+            zipped = list(zip(*batch[0], *batch[1]))
             assert len(zipped) == generator.sample_size
 
 
@@ -286,7 +286,7 @@ def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, mode
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
             batch = generator[0]
-            zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
+            zipped = list(zip(*batch[0], *batch[1]))
             assert len(zipped) == generator.sample_size - generator.augmentation_factor
 
 
@@ -294,8 +294,9 @@ def test_getitem_output_shape(test_raw_file, segments, model):
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16)
-            batch_x, labels = generator[0]
+            batch_x, batch_y = generator[0]
             frames, spectrograms = batch_x
+            labels, = batch_y
             assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
             assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
             assert all(map(lambda x: x.shape == model.output_shape, labels))
@@ -305,8 +306,9 @@ def test_getitem_output_shape_with_augmentor(test_raw_file, segments, model, aug
     with temp_dir(segments[0].dir):
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
-            batch_x, labels = generator[0]
+            batch_x, batch_y = generator[0]
             frames, spectrograms = batch_x
+            labels, = batch_y
             assert all(map(lambda x: x.shape == model.vision_input_shape, frames))
             assert all(map(lambda x: x.shape == model.audio_input_shape, spectrograms))
             assert all(map(lambda x: x.shape == model.output_shape, labels))
@@ -317,5 +319,5 @@ def test_getitem_should_has_same_number_of_sample_for_all_inputs(test_raw_file, 
         with temp_copy(test_raw_file, segments[0].dir):
             generator = SegmentsGenerator(segments, model, 16, augmentor, augmentor)
             batch = generator[0]
-            zipped = list(zip(batch[0][0], batch[0][1], batch[1]))
+            zipped = list(zip(*batch[0], *batch[1]))
             assert zipped is not None
