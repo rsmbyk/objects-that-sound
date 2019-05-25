@@ -5,7 +5,8 @@ url_template = 'https://youtube.com/watch'
 outfile_extensions = ('mkv', 'mp4', 'webm')
 
 # non-network keyword errors
-err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'terminated', 'removed', 'token']
+err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'terminated', 'removed', 'token',
+                'not available in your country']
 
 
 def dl(v, raise_exception=False, **options):
