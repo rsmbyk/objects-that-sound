@@ -6,7 +6,8 @@ outfile_extensions = ('mkv', 'mp4', 'webm')
 
 # non-network keyword errors
 err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'terminated', 'removed', 'token',
-                'not available in your country']
+                'It is not available in your country.',
+                'The uploader has not made this video available in your country.']
 
 
 def dl(v, raise_exception=False, **options):
