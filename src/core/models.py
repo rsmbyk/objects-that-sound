@@ -303,8 +303,7 @@ class AVOLNet(AVC):
 
     _fusion_subnetwork = [
         Lambda(lambda x: K.sum(x[0] * x[1], axis=-1, keepdims=True), name='scalar_products'),
-        Conv2D(1, 1, padding='same', activation=relu, name='conv7'),
-        BatchNormalization(),
-        Lambda(lambda x: K.sigmoid(x), name='sigmoid'),
+        Conv2D(1, 1, padding='same', name='conv7'),
+        Activation(sigmoid, name='sigmoid'),
         MaxPool2D(14, name='maxpool'),
         Flatten()]
