@@ -6,6 +6,7 @@ outfile_extensions = ('mkv', 'mp4', 'webm')
 
 # non-network keyword errors
 err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'terminated', 'removed', 'token',
+                'This video is not available.',
                 'It is not available in your country.',
                 'The uploader has not made this video available in your country.',
                 'This video is no longer available due to a privacy claim by a third party.']
