@@ -9,7 +9,8 @@ err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'term
                 'This video is not available.',
                 'It is not available in your country.',
                 'The uploader has not made this video available in your country.',
-                'This video is no longer available due to a privacy claim by a third party.']
+                'This video is no longer available due to a privacy claim by a third party.',
+                'Watch this video on YouTube. Playback on other websites has been disabled by the video owner.']
 
 
 def dl(v, raise_exception=False, **options):
