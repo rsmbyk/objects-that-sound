@@ -282,14 +282,14 @@ def test_waveform(test_raw_file, segment):
 def test_load_frame(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):
-            assert segment.load_frame(0).shape == (256, 341, 3)
+            assert segment.load_frame(segment.start_frames).shape == (256, 341, 3)
             assert segment.load_frame(len(segment) - 1).shape == (256, 341, 3)
 
 
 def test_load_spectrogram(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):
-            assert segment.load_spectrogram(0).shape == (257, 199, 1)
+            assert segment.load_spectrogram(segment.start_frames).shape == (257, 199, 1)
             assert segment.load_spectrogram(len(segment) - 1).shape == (257, 199, 1)
 
 
