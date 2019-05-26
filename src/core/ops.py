@@ -5,17 +5,24 @@ import numpy as np
 from util import ffmpeg, tensorplow as tp
 
 
-def extract_frames(raw, output_dir):
+def extract_frames(raw, output_dir, start_time=0, stop_time=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     if not os.path.isdir(output_dir):
         raise NotADirectoryError('OUTPUT_DIR ({})'.format(output_dir))
 
+    time_offsets = dict()
+    time_offsets['ss'] = start_time
+
+    if stop_time is not None:
+        time_offsets['to'] = stop_time
+
     ffmpeg.ffmpeg(raw, os.path.join(output_dir, '%d.jpg'),
                   r=25,
-                  start_number=0,
-                  vf='scale=256:256:force_original_aspect_ratio=increase')
+                  start_number=start_time * 25,
+                  vf='scale=256:256:force_original_aspect_ratio=increase',
+                  **time_offsets)
 
 
 def extract_audio(raw, output):
