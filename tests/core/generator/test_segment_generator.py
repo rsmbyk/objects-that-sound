@@ -1,5 +1,3 @@
-from copy import copy
-
 import math
 import numpy as np
 import pytest
@@ -275,19 +273,6 @@ def test_getitem(test_raw_file, segments, model, augmentor):
             batch = generator[0]
             zipped = list(zip(*batch[0], *batch[1]))
             assert len(zipped) == generator.sample_size
-
-
-def test_getitem_with_unavailable_negative_segment(test_raw_file, segments, model):
-    cp = copy(segments[0])
-    cp.start_seconds = 0
-    cp.end_seconds = 20
-    segments[0] = cp
-    with temp_dir(segments[0].dir):
-        with temp_copy(test_raw_file, segments[0].dir):
-            generator = SegmentsGenerator(segments, model, 16)
-            batch = generator[0]
-            zipped = list(zip(*batch[0], *batch[1]))
-            assert len(zipped) == generator.sample_size - generator.augmentation_factor
 
 
 def test_getitem_output_shape(test_raw_file, segments, model):

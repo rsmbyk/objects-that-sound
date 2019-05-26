@@ -31,7 +31,6 @@ class Segment:
         self.__duration = None
         self.__wavelength = None
         self.__positive_indices = None
-        self.__negative_indices = None
 
         self.load_attributes()
 
@@ -156,14 +155,6 @@ class Segment:
         return self.__positive_indices
 
     @property
-    def negative_indices(self):
-        if self.__negative_indices is None:
-            negative_lower_indices = list(range(0, self.start_frames - self.frame_rate))
-            negative_upper_indices = list(range(self.end_frames + self.frame_rate + 1, len(self) - self.frame_rate))
-            self.__negative_indices = negative_lower_indices + negative_upper_indices
-        return self.__negative_indices
-
-    @property
     def duration(self):
         if self.__duration is None:
             self.__duration = ops.get_video_duration(self.raw)
@@ -205,18 +196,6 @@ class Segment:
 
     def get_positive_sample(self):
         frame_index, audio_index = self.get_positive_sample_index()
-        return self.load_frame(frame_index), self.load_spectrogram(audio_index)
-
-    def get_negative_sample_index(self):
-        frame_index = random.choice(self.positive_indices)
-        audio_index = max(0, random.choice(self.negative_indices))
-
-        negative_indices = [frame_index, audio_index]
-        random.shuffle(negative_indices)
-        return negative_indices
-
-    def get_negative_sample(self):
-        frame_index, audio_index = self.get_negative_sample_index()
         return self.load_frame(frame_index), self.load_spectrogram(audio_index)
 
     @property

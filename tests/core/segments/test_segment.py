@@ -312,19 +312,6 @@ def test_positive_indices_should_not_contains_duplicates(test_raw_file, segment)
             assert len(set(segment.positive_indices)) == len(segment.positive_indices)
 
 
-def test_negative_indices_should_be_outside_start_and_end_seconds(test_raw_file, segment):
-    with temp_dir(segment.dir):
-        with temp_copy(test_raw_file, segment.dir):
-            assert segment.start_frames not in segment.negative_indices
-            assert segment.end_frames not in segment.negative_indices
-
-
-def test_negative_indices_should_not_contains_duplicates(test_raw_file, segment):
-    with temp_dir(segment.dir):
-        with temp_copy(test_raw_file, segment.dir):
-            assert len(set(segment.negative_indices)) == len(segment.negative_indices)
-
-
 def test_get_positive_sample_index_should_be_in_1_second_distance(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):
@@ -343,44 +330,10 @@ def test_get_positive_sample_index_should_both_in_positive_ranges(test_raw_file,
                 assert in_frame and in_audio
 
 
-def test_get_negative_sample_index_should_not_be_in_1_second_distance(test_raw_file, segment):
-    with temp_dir(segment.dir):
-        with temp_copy(test_raw_file, segment.dir):
-            for i in range(100):
-                frame_index, audio_index = segment.get_negative_sample_index()
-                assert abs(frame_index - audio_index) > 25
-
-
-def test_get_negative_sample_index_should_not_be_in_same_range(test_raw_file, segment):
-    in_frame_out_audio = False
-    out_frame_in_audio = False
-    with temp_dir(segment.dir):
-        with temp_copy(test_raw_file, segment.dir):
-            for i in range(100):
-                frame_index, audio_index = segment.get_negative_sample_index()
-                in_frame = segment.start_frames <= frame_index <= segment.end_frames
-                out_frame = frame_index < segment.start_frames or segment.end_frames > frame_index
-                in_audio = segment.start_frames <= audio_index <= segment.end_frames
-                out_audio = audio_index < segment.start_frames or segment.end_frames > audio_index
-                in_frame_out_audio |= (in_frame and out_audio)
-                out_frame_in_audio |= (out_frame and in_audio)
-                assert (in_frame and out_audio) or (out_frame and in_audio)
-    # assert both type of negative sample generated at least once
-    assert in_frame_out_audio and out_frame_in_audio
-
-
 def test_get_positive_sample(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):
             frame, spectrogram = segment.get_positive_sample()
-            assert frame.shape == (256, 341, 3)
-            assert spectrogram.shape == (257, 199, 1)
-
-
-def test_get_negative_sample(test_raw_file, segment):
-    with temp_dir(segment.dir):
-        with temp_copy(test_raw_file, segment.dir):
-            frame, spectrogram = segment.get_negative_sample()
             assert frame.shape == (256, 341, 3)
             assert spectrogram.shape == (257, 199, 1)
 

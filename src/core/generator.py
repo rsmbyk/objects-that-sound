@@ -99,17 +99,14 @@ class SegmentsGenerator(Sequence):
         batch_segments = self.segments[batch_slice]
         batch = list()
 
-        for segment in batch_segments:
+        for i, segment in enumerate(batch_segments):
             batch.append((segment.get_positive_sample(), 1))
 
-            try:
-                batch.append((segment.get_negative_sample(), 0))
-            except IndexError:
-                """
-                This exception happens if the segment does not have
-                negative sample (start_seconds and end_seconds
-                cover the whole video)
-                """
+            positive_frame = segment.get_positive_sample()[0]
+            other_segments = list(range(0, i)) + list(range(i+1, len(self.segments)))
+            negative_pair = self.segments[random.choice(other_segments)]
+            negative_audio = negative_pair.get_positive_sample()[1]
+            batch.append(((positive_frame, negative_audio), 0))
 
         random.shuffle(batch)
         batch_x, batch_y = zip(*batch)
