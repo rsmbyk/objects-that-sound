@@ -178,8 +178,7 @@ class Segment:
         if not os.path.exists(self.frame(index)):
             ops.extract_frames(self.raw,
                                self.frames_dir,
-                               self.start_seconds,
-                               self.end_seconds)
+                               self.start_seconds)
         return tp.load_image(self.frame(index))
 
     def load_spectrogram(self, index):
