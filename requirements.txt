@@ -43,4 +43,4 @@ termcolor==1.1.0
 tf-estimator-nightly==1.14.0.dev2019030115
 Werkzeug==0.14.1
 winshell==0.6
-youtube-dl==2019.3.9
+youtube-dl==2019.5.20
