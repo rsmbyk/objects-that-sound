@@ -33,6 +33,8 @@ class Segment:
         self.__positive_indices = None
 
         self.load_attributes()
+        self.start_seconds = math.ceil(self.start_seconds)
+        self.end_seconds = math.floor(self.end_seconds)
 
     def load_attributes(self):
         if os.path.exists(self.attrs_file):

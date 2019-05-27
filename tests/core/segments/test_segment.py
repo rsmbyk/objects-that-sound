@@ -43,6 +43,15 @@ def segment():
 
 
 @pytest.fixture
+def non_rounded_segment():
+    return Segment(root_dir='tests/.temp/segments',
+                   ytid='0qZ3tI4nAZE',
+                   start_seconds=6.3,
+                   end_seconds=16.3,
+                   positive_labels=['/m/07qrkrw', '/m/09x0r'])
+
+
+@pytest.fixture
 def segment_dict():
     return dict(ytid='0qZ3tI4nAZE',
                 start_seconds=6.000,
@@ -277,6 +286,13 @@ def test_waveform(test_raw_file, segment):
             waveform = segment.waveform
             assert waveform.sample_rate.numpy() == segment.sample_rate
             assert len(waveform.audio) == segment.wavelength
+
+
+def test_extract_frames_with_non_rounded_seconds(test_raw_file, non_rounded_segment):
+    with temp_dir(non_rounded_segment.dir):
+        with temp_copy(test_raw_file, non_rounded_segment.dir):
+            non_rounded_segment.load_frame(non_rounded_segment.start_frames)
+            assert len(os.listdir(non_rounded_segment.frames_dir)) <= 225
 
 
 def test_load_frame(test_raw_file, segment):
