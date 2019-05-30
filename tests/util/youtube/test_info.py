@@ -1,20 +1,11 @@
-import logging
-from io import StringIO
+import os
 
 import pytest
 import youtube_dl
 
 from util import youtube as yt
 
-
-class Han(logging.Handler):
-    def handle(self, record):
-        print(record)
-
-
-@pytest.fixture
-def logger():
-    return logging.Logger('test_dl_logger')
+os.environ[yt.YDL_EXECUTE_MODE] = yt.YDL_TESTING_MODE
 
 
 @pytest.fixture
@@ -27,16 +18,16 @@ def ytid_unavailable():
     return '-3IYpJfLVJk'
 
 
-def test_dl(ytid_success, logger):
-    info = yt.info(ytid_success, logger=logger)
+def test_dl(ytid_success):
+    info = yt.info(ytid_success)
     assert type(info) == dict
 
 
-def test_dl_with_error(ytid_unavailable, logger):
-    return_code = yt.info(ytid_unavailable, logger=logger)
+def test_dl_with_error(ytid_unavailable):
+    return_code = yt.info(ytid_unavailable)
     assert return_code == -1
 
 
-def test_dl_with_error_and_raise_exception(ytid_unavailable, logger):
+def test_dl_with_error_and_raise_exception(ytid_unavailable):
     with pytest.raises(youtube_dl.DownloadError):
-        yt.info(ytid_unavailable, True, logger=logger)
+        yt.info(ytid_unavailable, True)

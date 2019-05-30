@@ -1,3 +1,7 @@
+import logging
+import os
+import sys
+
 import youtube_dl
 from furl import furl
 
@@ -12,6 +16,13 @@ err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'term
                 'This video is no longer available due to a privacy claim by a third party.',
                 'Watch this video on YouTube. Playback on other websites has been disabled by the video owner.']
 
+logger = logging.Logger('youtube_logger')
+logger.addHandler(logging.StreamHandler(sys.stdout))
+
+YDL_EXECUTE_MODE = 'YDL_EXECUTE_MODE'
+YDL_NORMAL_MODE = '0'
+YDL_TESTING_MODE = '-1'
+
 
 def dl(v, raise_exception=False, **options):
     """
@@ -19,6 +30,8 @@ def dl(v, raise_exception=False, **options):
     `YoutubeDL Options <https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L118-L320>`_
     to see all available options
     """
+    if os.environ.get(YDL_EXECUTE_MODE, YDL_NORMAL_MODE) == YDL_TESTING_MODE:
+        options['logger'] = logger
 
     ydl = youtube_dl.YoutubeDL(options)
 
@@ -41,6 +54,9 @@ def info(v, raise_exception=False, **options):
     `YoutubeDL Options <https://github.com/rg3/youtube-dl/blob/master/youtube_dl/YoutubeDL.py#L118-L320>`_
     to see all available options
     """
+    if os.environ.get(YDL_EXECUTE_MODE, YDL_NORMAL_MODE) == YDL_TESTING_MODE:
+        options['logger'] = logger
+
     ydl = youtube_dl.YoutubeDL(options)
 
     while True:
