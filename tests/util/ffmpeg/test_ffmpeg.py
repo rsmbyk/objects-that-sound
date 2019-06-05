@@ -1,9 +1,28 @@
+import contextlib
 import os
 import shutil
 
 import pytest
 
 from util import ffmpeg
+
+
+@contextlib.contextmanager
+def temp_copy(path, to):
+    os.makedirs(os.path.dirname(to), exist_ok=True)
+    shutil.copy(path, to)
+    yield to
+    if os.path.isdir(to):
+        shutil.rmtree(to)
+    else:
+        os.remove(to)
+
+
+@contextlib.contextmanager
+def temp_dir(path):
+    os.makedirs(path, exist_ok=True)
+    yield path
+    shutil.rmtree(path)
 
 
 @pytest.fixture
@@ -19,6 +38,16 @@ def non_existing_test_infile():
 @pytest.fixture
 def test_outfile():
     return 'tests/.temp/ffmpeg/out/file.mp4'
+
+
+@pytest.fixture
+def test_infile_with_space():
+    return 'tests/.temp/ffmpeg/input file/test.mp4'
+
+
+@pytest.fixture
+def test_outfile_with_space():
+    return 'tests/.temp/ffmpeg/out dir/file.mp4'
 
 
 def test_ffmpeg_not_available():
@@ -71,3 +100,10 @@ def test_ffmpeg_with_invalid_parameters(test_infile, test_outfile):
     with pytest.raises(RuntimeError):
         ffmpeg.ffmpeg(test_infile, test_outfile, invalid_option=True)
     os.rmdir(os.path.dirname(test_outfile))
+
+
+def test_ffmpeg_with_path_containing_space(test_infile, test_infile_with_space, test_outfile_with_space):
+    with temp_copy(test_infile, test_infile_with_space):
+        with temp_dir(os.path.dirname(test_outfile_with_space)):
+            ffmpeg.ffmpeg(test_infile_with_space, test_outfile_with_space)
+            assert os.path.exists(test_outfile_with_space)
