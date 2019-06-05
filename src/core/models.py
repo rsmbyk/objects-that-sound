@@ -1,8 +1,10 @@
 from functools import reduce
 
-from tensorflow.python.keras import Model, Sequential
-from tensorflow.python.keras.activations import *
+from tensorflow.python.keras import Model, Sequential, backend as K
+from tensorflow.python.keras.activations import sigmoid
 from tensorflow.python.keras.layers import *
+from tensorflow.python.keras.losses import BinaryCrossentropy
+from tensorflow.python.keras.optimizers import Adam
 
 
 class AVC:
@@ -15,6 +17,11 @@ class AVC:
         if self.__model__ is None:
             self.__model__ = self.__fuse__()
         return self.__model__
+
+    def compile(self, lr=0.00001, decay=0.00001, metrics=None):
+        optimizer = Adam(lr=lr, decay=decay)
+        self.get_model().compile(optimizer, loss=BinaryCrossentropy(), metrics=metrics)
+        return self.get_model()
 
     @property
     def vision_subnetwork(self):
