@@ -1,12 +1,15 @@
 import os
 import pprint
 import stat
+import threading
 from operator import attrgetter, itemgetter
 
+import math
 import pandas as pd
 import wget
 
 import util.youtube as yt
+from core import ops
 from core.ontology import Ontology
 from core.segments import SegmentsWrapper
 
@@ -139,3 +142,53 @@ def download(labels, data_dir, segments, ontology, limit=None, min_size=None, ma
             for ont in ontologies:
                 if segment_in_ontology(ont)(segment):
                     counter[ont.name].append(segment)
+
+
+def preprocess(data_dir, segments, workers=1):
+    if not isinstance(workers, int):
+        raise TypeError('WORKERS can\'t be of type {}'.format(type(workers).__name__))
+
+    if workers < 0:
+        raise ValueError('WORKERS must be positive (not {}).'.format(workers))
+
+    def thread_print_function(thread_id):
+        def decorator(*args, **kwargs):
+            print('[Thread {}]'.format(thread_id), *args, **kwargs)
+        return decorator
+
+    def thread_function(thread_id, thread_segments):
+        print_function = thread_print_function(thread_id)
+
+        for i, segment in enumerate(thread_segments):
+            print_function('{} ({} / {})'.format(segment.ytid, i+1, len(thread_segments)))
+            print_function('Extracting frames', end='\r')
+
+            ops.extract_frames(segment.raw, segment.frames_dir, segment.start_seconds)
+
+            print_function('Extracting frames (finished)')
+
+            print_function('Computing spectrograms', end='\r')
+            waveform, sr = segment.waveform
+            for j in range(segment.start_frames, min(segment.end_frames, len(segment))):
+                print_function('Computing spectrograms ({})'.format(j), end='\r')
+                if not os.path.exists(segment.spectrogram(j)):
+                    start_samples = segment.get_sample_index(j)
+                    samples_slice = slice(start_samples, start_samples+segment.sample_rate)
+                    ops.compute_spectrogram(waveform[samples_slice], segment.spectrogram(j))
+            print_function('Computing spectrograms (finished)')
+
+    segments = SegmentsWrapper(segments, os.path.join(data_dir, 'raw'))
+    segments = list(filter(attrgetter('is_available'), segments))
+
+    threads = list()
+
+    for idx in range(workers):
+        thread_size = math.ceil(len(segments) / workers)
+        thread_start = idx * thread_size
+        thread_args = idx, segments[thread_start:thread_start + thread_size]
+        thread = threading.Thread(target=thread_function, args=thread_args)
+        threads.append(thread)
+        thread.start()
+
+    for idx, thread in enumerate(threads):
+        thread.join()
