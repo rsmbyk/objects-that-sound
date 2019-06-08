@@ -126,8 +126,12 @@ def download(labels, data_dir, segments, ontology, limit=None, min_size=None, ma
 
             formats = filter(lambda x: 'filesize' in x, info['formats'])
             filesizes = map(itemgetter('filesize'), formats)
-            filesizes = filter(lambda x: x is not None, filesizes)
-            filesize = int(max(filesizes) / 1024 / 1024)
+            filesizes = list(filter(lambda x: x is not None, filesizes))
+            filesize = int(max(filesizes) / 1024 / 1024) if filesizes else None
+
+            if filesize is None:
+                print('[{}] cannot retrieve filesize from youtube info'.format(segment.ytid))
+                continue
 
             if min_size is not None and filesize < min_size:
                 print('[{}] smaller than min_size ({} MiB).'.format(segment.ytid, filesize))
