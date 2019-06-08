@@ -156,30 +156,36 @@ def preprocess(data_dir, segments, workers=1):
         raise ValueError('WORKERS must be positive (not {}).'.format(workers))
 
     def thread_print_function(thread_id):
-        def decorator(*args, **kwargs):
-            print('[Thread {}]'.format(thread_id), *args, **kwargs)
+        def decorator(*args, wait=False, **kwargs):
+            end = '\r' if wait else '\n'
+            if workers > 1:
+                args = ('[Thread {}]'.format(thread_id),) + args
+            print(*args, **kwargs, end=end)
         return decorator
 
     def thread_function(thread_id, thread_segments):
         print_function = thread_print_function(thread_id)
 
         for i, segment in enumerate(thread_segments):
-            print_function('{} ({} / {})'.format(segment.ytid, i+1, len(thread_segments)))
-            print_function('Extracting frames', end='\r')
+            print_function('{}: ({} / {})'.format(segment.ytid, i+1, len(thread_segments)))
+            print_function('{}: Extracting frames'.format(segment.ytid), wait=True)
 
             ops.extract_frames(segment.raw, segment.frames_dir, segment.start_seconds)
 
-            print_function('Extracting frames (finished)')
+            print_function('{}: Extracting frames (finished)'.format(segment.ytid))
+            print_function('{}: Computing spectrograms'.format(segment.ytid), wait=True)
 
-            print_function('Computing spectrograms', end='\r')
             waveform, sr = segment.waveform
             for j in range(segment.start_frames, min(segment.end_frames, len(segment))):
-                print_function('Computing spectrograms ({})'.format(j), end='\r')
+                if workers == 1:
+                    print_function('{}: Computing spectrograms ({})'.format(segment.ytid, j), wait=True)
+
                 if not os.path.exists(segment.spectrogram(j)):
                     start_samples = segment.get_sample_index(j)
                     samples_slice = slice(start_samples, start_samples+segment.sample_rate)
                     ops.compute_spectrogram(waveform[samples_slice], segment.spectrogram(j))
-            print_function('Computing spectrograms (finished)')
+
+            print_function('{}: Computing spectrograms (finished)'.format(segment.ytid))
 
     segments = SegmentsWrapper(segments, os.path.join(data_dir, 'raw'))
     segments = list(filter(attrgetter('is_available'), segments))
