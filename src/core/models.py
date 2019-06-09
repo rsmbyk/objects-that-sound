@@ -314,3 +314,13 @@ class AVOLNet(AVC):
         Activation(sigmoid, name='sigmoid'),
         MaxPool2D(14, name='maxpool'),
         Flatten()]
+
+
+def retrieve_model(name):
+    if name == 'l3':
+        return L3Net
+    if name == 'ave':
+        return AVENet
+    if name == 'avol':
+        return AVOLNet
+    raise ValueError('Unknown model \'{}\''.format(name))
