@@ -15,9 +15,14 @@ def avc():
 @pytest.fixture
 def model():
     class CompleteAVC(AVC):
-        _vision_subnetwork = Sequential([InputLayer((224, 224, 3)), MaxPool2D(224)])
-        _audio_subnetwork = Sequential([InputLayer((257, 199, 1)), MaxPool2D((257, 199))])
-        _fusion_subnetwork = [Concatenate(), Dense(1), Flatten()]
+        def get_vision_subnetwork(self):
+            return Sequential([InputLayer((224, 224, 3)), MaxPool2D(224)])
+
+        def get_audio_subnetwork(self):
+            return Sequential([InputLayer((257, 199, 1)), MaxPool2D((257, 199))])
+
+        def get_fusion_subnetwork(self):
+            return [Concatenate(), Dense(1), Flatten()]
 
     return CompleteAVC()
 
