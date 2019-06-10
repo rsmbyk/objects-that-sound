@@ -25,6 +25,10 @@ class AVC:
         return self.get_model()
 
     @property
+    def name(self):
+        raise NotImplementedError('model\'s name must be defined')
+
+    @property
     def vision_subnetwork(self):
         if self.__vision_subnetwork is None:
             self.__vision_subnetwork = self.get_vision_subnetwork()
@@ -71,10 +75,14 @@ class AVC:
         concat = [self.vision_subnetwork.output, self.audio_subnetwork.output]
         fusion = reduce(lambda x, f: f(x), self.fusion_subnetwork, concat)
         inputs = [self.vision_subnetwork.input, self.audio_subnetwork.input]
-        return Model(inputs, fusion)
+        return Model(inputs, fusion, name=self.name)
 
 
 class L3Net(AVC):
+    @property
+    def name(self):
+        return 'L3-Net'
+
     def get_vision_subnetwork(self):
         return Sequential([
             InputLayer((224, 224, 3), name='vision_input'),
@@ -158,6 +166,10 @@ class L3Net(AVC):
 
 
 class AVENet(AVC):
+    @property
+    def name(self):
+        return 'AVE-Net'
+
     def get_vision_subnetwork(self):
         return Sequential([
             InputLayer((224, 224, 3), name='vision_input'),
@@ -247,6 +259,10 @@ class AVENet(AVC):
 
 
 class AVOLNet(AVC):
+    @property
+    def name(self):
+        return 'AVOL-Net'
+
     def get_vision_subnetwork(self):
         return Sequential([
             InputLayer((224, 224, 3), name='vision_input'),

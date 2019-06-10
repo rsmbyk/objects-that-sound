@@ -15,6 +15,10 @@ def avc():
 @pytest.fixture
 def model():
     class CompleteAVC(AVC):
+        @property
+        def name(self):
+            return 'test_model'
+
         def get_vision_subnetwork(self):
             return Sequential([InputLayer((224, 224, 3)), MaxPool2D(224)])
 
@@ -35,6 +39,11 @@ def incomplete_model():
     return IncompleteAVC()
 
 
+def test_name_should_not_be_implemented(avc):
+    with pytest.raises(NotImplementedError):
+        assert avc.name
+
+
 def test_vision_subnetwork_should_not_be_implemented(avc):
     with pytest.raises(NotImplementedError):
         assert avc.vision_subnetwork
@@ -50,6 +59,11 @@ def test_fusion_subnetwork_should_not_be_implemented(avc):
         assert avc.fusion_subnetwork
 
 
+def test_avc_model_should_defines_name(incomplete_model):
+    with pytest.raises(NotImplementedError):
+        assert incomplete_model.name
+
+
 def test_avc_model_should_implements_all_subnetwork(incomplete_model):
     with pytest.raises(NotImplementedError):
         assert incomplete_model.vision_subnetwork
@@ -59,6 +73,10 @@ def test_avc_model_should_implements_all_subnetwork(incomplete_model):
 
     with pytest.raises(NotImplementedError):
         assert incomplete_model.fusion_subnetwork
+
+
+def test_name(model):
+    assert model.name == 'test_model'
 
 
 def test_vision_subnetwork_should_return_same_object(model):

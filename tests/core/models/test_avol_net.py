@@ -8,6 +8,10 @@ def avol_net():
     return AVOLNet()
 
 
+def test_name(avol_net):
+    assert avol_net.name == 'AVOL-Net'
+
+
 def test_vision_input_shape(avol_net):
     assert avol_net.vision_input_shape == (224, 224, 3)
 

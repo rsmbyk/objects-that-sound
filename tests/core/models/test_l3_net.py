@@ -8,6 +8,10 @@ def l3_net():
     return L3Net()
 
 
+def test_name(l3_net):
+    assert l3_net.name == 'L3-Net'
+
+
 def test_vision_input_shape(l3_net):
     assert l3_net.vision_input_shape == (224, 224, 3)
 
