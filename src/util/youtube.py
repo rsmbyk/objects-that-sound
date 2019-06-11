@@ -9,12 +9,25 @@ url_template = 'https://youtube.com/watch'
 outfile_extensions = ('mkv', 'mp4', 'webm')
 
 # non-network keyword errors
-err_keywords = ['copyright', 'unavailable', 'account', 'Terms of Service', 'terminated', 'removed', 'token',
+err_keywords = ['"token" parameter not in video info for unknown reason;',
+                'requested format not available;',
+                'This video is unavailable.',
                 'This video is not available.',
-                'It is not available in your country.',
+                'This video has been removed by the user',
+                'This video has been removed for violating YouTube\'s Terms of Service.',
                 'The uploader has not made this video available in your country.',
-                'This video is no longer available due to a privacy claim by a third party.',
-                'Watch this video on YouTube. Playback on other websites has been disabled by the video owner.']
+                'Watch this video on YouTube. Playback on other websites has been disabled by the video owner.',
+
+                'This video is no longer available',
+                ' because the YouTube account associated with this video has been terminated.',
+                ' due to a privacy claim by a third party.',
+                ' due to a copyright claim by ',
+                ' is no longer available due to a copyright claim by a third party.',
+
+                'This video contains content from ',
+                '. It is not available in your country.',
+                ', who has blocked it on copyright grounds.',
+                ', one or more of whom have blocked it on copyright grounds.', ]
 
 logger = logging.Logger('youtube_logger')
 logger.addHandler(logging.StreamHandler(sys.stdout))
