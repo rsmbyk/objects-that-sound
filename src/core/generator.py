@@ -1,9 +1,9 @@
 import random
 from functools import reduce
 
+import cv2
 import math
 import numpy as np
-import tensorflow as tf
 from tensorflow.python.keras.utils import Sequence
 
 from core.augmentor import Augmentor
@@ -73,15 +73,19 @@ class SegmentsGenerator(Sequence):
 
     def augment_vision(self, frame):
         if min(np.subtract(frame.shape, self.model.vision_input_shape)[:-1]) >= 0:
-            out = tf.image.random_crop(frame, self.model.vision_input_shape)
+            crop_space = np.subtract(frame.shape, self.model.vision_input_shape)[:-1]
+            crop_start = list(map(lambda x: random.randint(0, x), crop_space))
+            x1, y1 = crop_start
+            x2, y2 = list(map(lambda x: x + self.model.vision_input_shape[0], crop_start))
+            out = frame[x1:x2, y1:y2]
         else:
-            resize = tf.image.resize(frame, self.model.vision_input_shape[:-1])
-            out = tf.cast(resize, tf.dtypes.uint8)
+            out = cv2.resize(frame, self.model.vision_input_shape[:-1])
 
         return self.vision_augmentor(out)
 
     def augment_audio(self, spectrogram):
-        out = tf.image.resize_image_with_crop_or_pad(spectrogram, *self.model.audio_input_shape[:-1])
+        out = cv2.resize(spectrogram, tuple(reversed(self.model.audio_input_shape[:-1])))
+        out = np.expand_dims(out, -1)
         return self.audio_augmentor(out)
 
     def zip_samples(self, frames, spectrograms, labels):

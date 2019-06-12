@@ -1,5 +1,6 @@
 import os
 
+import cv2
 import tensorflow as tf
 from tensorflow.python.ops import gen_audio_ops
 
@@ -9,12 +10,13 @@ class Ops:
         raise NotImplementedError()
 
 
-def load_image(filename, channels=None):
+def load_image(filename):
     if not os.path.exists(filename):
         raise FileNotFoundError('FILE ({})'.format(filename))
 
-    contents = tf.io.read_file(filename)
-    image = tf.image.decode_image(contents, channels)
+    image = cv2.imread(filename)
+    b, g, r = cv2.split(image)
+    image = cv2.merge([r, g, b])
     return image
 
 
