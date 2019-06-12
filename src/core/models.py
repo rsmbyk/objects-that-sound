@@ -5,6 +5,7 @@ from tensorflow.python.keras import Model, Sequential, backend as K
 from tensorflow.python.keras.activations import sigmoid
 from tensorflow.python.keras.layers import *
 from tensorflow.python.keras.losses import binary_crossentropy
+from tensorflow.python.keras.metrics import binary_accuracy
 
 
 class AVC:
@@ -19,9 +20,11 @@ class AVC:
             self.__model__ = self.__fuse__()
         return self.__model__
 
-    def compile(self, lr=0.00001, decay=0.00001, metrics=None):
+    def compile(self, lr=0.00001, decay=0.00001):
         optimizer = tf.optimizers.Adam(lr=lr, decay=decay)
-        self.get_model().compile(optimizer, loss=binary_crossentropy, metrics=metrics)
+        self.get_model().compile(optimizer,
+                                 loss=binary_crossentropy,
+                                 metrics=[binary_accuracy])
         return self.get_model()
 
     @property

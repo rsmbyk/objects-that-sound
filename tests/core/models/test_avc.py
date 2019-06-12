@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import *
-from tensorflow.python.keras.metrics import binary_accuracy, Recall
 
 from core.models import AVC
 
@@ -31,6 +30,7 @@ def model():
     return CompleteAVC()
 
 
+# noinspection PyAbstractClass
 @pytest.fixture
 def incomplete_model():
     class IncompleteAVC(AVC):
@@ -122,8 +122,3 @@ def test_compile_with_custom_lr_and_decay(model):
     model = model.compile(0.1, 0.01)
     assert np.isclose(model.optimizer.lr.numpy(), 0.1)
     assert np.isclose(model.optimizer.decay.numpy(), 0.01)
-
-
-def test_compile_with_metrics(model):
-    model = model.compile(metrics=['accuracy', Recall(), binary_accuracy])
-    assert len(model.metrics) == 3
