@@ -157,7 +157,7 @@ def preprocess(data_dir, segments, workers=1):
 
     def thread_print_function(thread_id):
         def decorator(*args, wait=False, **kwargs):
-            end = '\r' if wait else '\n'
+            end = '\r' if wait and workers == 1 else '\n'
             if workers > 1:
                 args = ('[Thread {}]'.format(thread_id),) + args
             print(*args, **kwargs, end=end)
