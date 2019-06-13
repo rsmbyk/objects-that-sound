@@ -306,3 +306,13 @@ def test_getitem_should_has_same_number_of_sample_for_all_inputs(test_raw_file, 
             batch = generator[0]
             zipped = list(zip(*batch[0], *batch[1]))
             assert zipped is not None
+
+
+def test_segments_should_be_randomized_on_each_epoch_end(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            epoch1 = generator[0]
+            generator.on_epoch_end()
+            epoch2 = generator[0]
+            assert not np.array_equal(epoch1, epoch2)

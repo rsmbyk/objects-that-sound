@@ -125,5 +125,8 @@ class SegmentsGenerator(Sequence):
 
         return [frames, spectrograms], [labels]
 
+    def on_epoch_end(self):
+        random.shuffle(self.segments)
+
     def __len__(self):
         return math.ceil(len(self.segments) / self.batch_size)
