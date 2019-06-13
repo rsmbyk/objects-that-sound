@@ -316,3 +316,12 @@ def test_segments_should_be_randomized_on_each_epoch_end(test_raw_file, segments
             generator.on_epoch_end()
             epoch2 = generator[0]
             assert not np.array_equal(epoch1, epoch2)
+
+
+def test_frames_should_be_normalized(test_raw_file, segments, model):
+    with temp_dir(segments[0].dir):
+        with temp_copy(test_raw_file, segments[0].dir):
+            generator = SegmentsGenerator(segments, model, 16)
+            batch = generator[0]
+            frames = batch[0][0]
+            assert np.max(frames) <= 1.

@@ -81,7 +81,7 @@ class SegmentsGenerator(Sequence):
         else:
             out = cv2.resize(frame, self.model.vision_input_shape[:-1])
 
-        return self.vision_augmentor(out)
+        return list(map(lambda x: x / 255., self.vision_augmentor(out)))
 
     def augment_audio(self, spectrogram):
         out = cv2.resize(spectrogram, tuple(reversed(self.model.audio_input_shape[:-1])))
