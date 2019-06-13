@@ -328,6 +328,13 @@ def test_positive_indices_should_not_contains_duplicates(test_raw_file, segment)
             assert len(set(segment.positive_indices)) == len(segment.positive_indices)
 
 
+def test_positive_indices_should_consider_extracted_frames(test_raw_file, segment):
+    with temp_dir(segment.dir):
+        with temp_copy(test_raw_file, segment.dir):
+            segment.load_frame(segment.start_frames)
+            assert len(segment.positive_indices) <= 250
+
+
 def test_get_positive_sample_index_should_be_in_1_second_distance(test_raw_file, segment):
     with temp_dir(segment.dir):
         with temp_copy(test_raw_file, segment.dir):

@@ -3,6 +3,7 @@ import json
 import os
 import random
 from functools import reduce
+from operator import itemgetter
 from typing import Union, List
 
 import math
@@ -153,7 +154,15 @@ class Segment:
     @property
     def positive_indices(self):
         if self.__positive_indices is None:
-            self.__positive_indices = range(self.start_frames, min(self.end_frames, len(self)))
+            if os.path.exists(self.frames_dir):
+                frames = os.listdir(self.frames_dir)
+                frames = map(lambda f: f.split('.'), frames)
+                frames = map(itemgetter(0), frames)
+                frames = map(int, frames)
+                max_frame_index = max(frames)
+            else:
+                max_frame_index = len(self)
+            self.__positive_indices = range(self.start_frames, min(self.end_frames, len(self), max_frame_index))
         return self.__positive_indices
 
     @property
