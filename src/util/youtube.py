@@ -18,6 +18,9 @@ err_keywords = ['"token" parameter not in video info for unknown reason;',
                 'The uploader has not made this video available in your country.',
                 'Watch this video on YouTube. Playback on other websites has been disabled by the video owner.',
 
+                'The YouTube account associated with this video has been terminated'
+                ' due to multiple third-party notifications of copyright infringement.',
+
                 'This video is no longer available',
                 ' because the YouTube account associated with this video has been terminated.',
                 ' due to a privacy claim by a third party.',
