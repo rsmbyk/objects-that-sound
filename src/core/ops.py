@@ -74,3 +74,23 @@ def load_spectrogram(filename):
     npz = np.load(filename)
     spc = npz['spectrogram']
     return np.expand_dims(spc, -1)
+
+
+def merge_frames(frames_dir, audio, output):
+    if not os.path.exists(frames_dir):
+        raise FileNotFoundError('FRAMES_DIR ({})'.format(frames_dir))
+
+    if not os.path.isdir(frames_dir):
+        raise NotADirectoryError('FRAMES_DIR ({})'.format(frames_dir))
+
+    if not os.path.exists(audio):
+        raise FileNotFoundError('AUDIO ({})'.format(audio))
+
+    if os.path.exists(output):
+        return
+
+    ffmpeg.ffmpeg(audio, output,
+                  i=os.path.join(frames_dir, '%d.png'),
+                  r=25,
+                  pix_fmt='yuv420p',
+                  **{'c:v': 'libvpx'})
