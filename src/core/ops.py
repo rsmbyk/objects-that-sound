@@ -20,6 +20,19 @@ def extract_frames(raw, output_dir, start_time=0):
                   vf='scale=256:256:force_original_aspect_ratio=increase')
 
 
+def extract_all_frames(raw, output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    if not os.path.isdir(output_dir):
+        raise NotADirectoryError('OUTPUT_DIR ({})'.format(output_dir))
+
+    ffmpeg.ffmpeg(raw, os.path.join(output_dir, '%d.jpg'),
+                  r=25,
+                  start_number=0,
+                  vf='scale=256:256:force_original_aspect_ratio=increase')
+
+
 def extract_audio(raw, output):
     if os.path.exists(output):
         return
