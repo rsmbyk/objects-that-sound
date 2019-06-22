@@ -4,18 +4,19 @@ from functools import reduce
 import cv2
 import math
 import numpy as np
-from tensorflow.python.keras.utils import Sequence
+from tensorflow.python.keras import utils as keras_utils
 
 from core.augmentor import Augmentor
 from core.models import AVC
 from core.segments import SegmentsWrapper, Segment
 
 
-class SegmentsGenerator(Sequence):
+class SegmentsGenerator(keras_utils.Sequence):
     default_augmentor = Augmentor()
 
-    def __init__(self, segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
-        self.__validate_segments(segments)
+    def __init__(self, segments, negative_segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
+        self.segments = self.__validate_segments(segments)
+        self.negative_segments = self.__validate_segments(negative_segments)
         self.__validate_batch_size(batch_size)
         self.__validate_model(model)
         self.__validate_augmentors(vision_augmentor, audio_augmentor)
@@ -39,7 +40,7 @@ class SegmentsGenerator(Sequence):
         if len(segments) == 0:
             raise ValueError('all the segment in \'segments\' are not available')
 
-        self.segments = segments
+        return segments
 
     def __validate_batch_size(self, batch_size):
         if batch_size is None:
@@ -116,8 +117,7 @@ class SegmentsGenerator(Sequence):
             batch.append((segment.get_positive_sample(), 1))
 
             positive_frame = segment.get_positive_sample()[0]
-            other_segments = list(range(0, i)) + list(range(i+1, len(self.segments)))
-            negative_pair = self.segments[random.choice(other_segments)]
+            negative_pair = random.choice(self.negative_segments)
             negative_audio = negative_pair.get_positive_sample()[1]
             batch.append(((positive_frame, negative_audio), 0))
 
