@@ -83,4 +83,4 @@ Werkzeug==0.14.1
 wget==3.2
 widgetsnbextension==3.4.2
 winshell==0.6
-youtube-dl==2019.5.20
+youtube-dl==2019.6.21
