@@ -1,5 +1,6 @@
 import os
 import pprint
+import random
 import stat
 import threading
 from operator import attrgetter, itemgetter
@@ -65,7 +66,8 @@ def init(data_dir, overwrite=False):
                 os.remove(os.path.join(parent_dir, file))
 
 
-def download(labels, data_dir, segments, ontology, limit=None, min_size=None, max_size=None, blacklist=None):
+def download(labels, data_dir, segments, ontology, limit=None, min_size=None, max_size=None, blacklist=None, seed=None):
+    random.seed(seed)
     segments = SegmentsWrapper(segments, os.path.join(data_dir, 'raw'))
     ontology = Ontology(ontology, os.path.join(data_dir, 'videos'))
 
@@ -95,7 +97,9 @@ def download(labels, data_dir, segments, ontology, limit=None, min_size=None, ma
     counter = {name: s for name, s in downloaded}
     pprint.pprint({name: len(s) for name, s in counter.items()})
 
-    for segment in segments:
+    while True:
+        segment = random.choice(segments)
+
         finished = limit is not None and all(map(limit.__le__, map(len, counter.values())))
         print(list(map(len, counter.values())))
 
