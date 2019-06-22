@@ -128,13 +128,13 @@ def test(input_file, model, output_file, data_dir, tempdir, threshold, workers):
     os.makedirs(data_output_dir, exist_ok=True)
 
     model = keras_models.load_model(model)
-    localization_output = K.function([model.input], [model.get_layer('sigmoid').output])
     ops.extract_all_frames(segment.raw, segment.frames_dir)
 
     color_heatmaps = generate_color_heatmaps()
     failed_frames = list()
 
     def thread_function(thread_id, start_frame, end_frame):
+        localization_output = K.function([model.input], [model.get_layer('sigmoid').output])
         for fi in range(start_frame, end_frame):
             outframe = os.path.join(outputs_dir, '{}.png'.format(fi))
             if not os.path.exists(outframe):
