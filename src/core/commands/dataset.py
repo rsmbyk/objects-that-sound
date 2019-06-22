@@ -97,9 +97,9 @@ def download(labels, data_dir, segments, ontology, limit=None, min_size=None, ma
     counter = {name: s for name, s in downloaded}
     pprint.pprint({name: len(s) for name, s in counter.items()})
 
-    while True:
-        segment = random.choice(segments)
+    random.shuffle(segments)
 
+    for segment in segments:
         finished = limit is not None and all(map(limit.__le__, map(len, counter.values())))
         print(list(map(len, counter.values())))
 
@@ -110,13 +110,15 @@ def download(labels, data_dir, segments, ontology, limit=None, min_size=None, ma
 
             if limit is not None:
                 ok = True
+                exceeded = list()
 
                 for ont in ontologies:
                     if segment_in_ontology(ont)(segment) and len(counter[ont.name]) >= limit:
-                        print('[{}] "{}" has reached limit.'.format(segment.ytid, ont.proper_name))
                         ok = False
+                        exceeded.append(ont.proper_name)
 
                 if not ok:
+                    print('[{}] "{}" has reached limit.'.format(segment.ytid, exceeded))
                     continue
 
             blacklisted = blacklist[blacklist['YTID'] == segment.ytid]
