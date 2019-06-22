@@ -210,6 +210,7 @@ class AVENet(AVC):
             MaxPool2D(14, name='vision_pool4'),
 
             Dense(128, name='vision_fc1'),
+            ReLU(),
             Dense(128, name='vision_fc2'),
             Lambda(lambda x: K.l2_normalize(x), name='vision_L2_norm')])
 
@@ -250,6 +251,7 @@ class AVENet(AVC):
             MaxPool2D((16, 12), name='audio_pool4'),
 
             Dense(128, name='audio_fc1'),
+            ReLU(),
             Dense(128, name='audio_fc2'),
             Lambda(lambda x: K.l2_normalize(x), name='audio_L2_norm')])
 
