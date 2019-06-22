@@ -257,7 +257,7 @@ class AVENet(AVC):
 
     def get_fusion_subnetwork(self):
         return [
-            Lambda(lambda x: K.sum(K.abs(x[0] - x[1]), axis=-1), name='euclidean_distance'),
+            Lambda(lambda x: K.sqrt(K.sum(K.square(x[0] - x[1]), axis=-1)), name='euclidean_distance'),
             Dense(2, name='fc3'),
             Flatten(name='vision_flatten'),
             Softmax(name='softmax')]
