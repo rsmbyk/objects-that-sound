@@ -206,3 +206,36 @@ def preprocess(data_dir, segments, workers=1):
 
     for idx, thread in enumerate(threads):
         thread.join()
+
+
+def compress_segments(data_dir, segments, ontology, labels, output_file):
+    raw_dir = os.path.join(data_dir, 'raw')
+    segments = SegmentsWrapper(segments, raw_dir)
+    ontology = Ontology(ontology, os.path.join(data_dir, 'videos'))
+
+    def transform_segment(s):
+        return (s.ytid,
+                str(float(s.start_seconds)),
+                str(float(s.end_seconds)),
+                '"{}"'.format(','.join(s.positive_labels)))
+
+    def segment_in_ontology(o):
+        def decorator(s):
+            return any(map(o.__contains__, s.positive_labels))
+        return decorator
+
+    ontologies = ontology.retrieve(*labels)
+
+    available_segments = os.listdir(raw_dir)
+    available_segments = filter(segments.__contains__, available_segments)
+    available_segments = map(segments.__getitem__, available_segments)
+    available_segments = filter(attrgetter('is_available'), available_segments)
+    available_segments = filter(segment_in_ontology(ontologies), available_segments)
+    available_segments = map(transform_segment, available_segments)
+    available_segments = map(', '.join, available_segments)
+    available_segments = '\n'.join(available_segments)
+
+    with open(output_file, 'w') as outfile:
+        outfile.write(available_segments)
+
+    print('Segments file saved to', output_file)
