@@ -127,7 +127,10 @@ class SegmentsGenerator(keras_utils.Sequence):
 
         frames = list(reduce(list.__add__, list(map(self.augment_vision, frames))))
         spectrograms = list(reduce(list.__add__, list(map(self.augment_audio, spectrograms))))
-        labels = list(map(lambda y: np.reshape(y, self.model.output_shape), batch_y))
+        try:
+            labels = list(map(lambda y: np.reshape(y, self.model.output_shape), batch_y))
+        except ValueError:
+            labels = keras_utils.to_categorical(batch_y)
 
         samples = self.zip_samples(frames, spectrograms, labels)
         frames, spectrograms, labels = zip(*samples)
