@@ -84,8 +84,17 @@ class SegmentsGenerator(Sequence):
         return list(map(lambda x: x / 255., self.vision_augmentor(out)))
 
     def augment_audio(self, spectrogram):
-        out = cv2.resize(spectrogram, tuple(reversed(self.model.audio_input_shape[:-1])))
+        if spectrogram.shape[1] == self.model.audio_input_shape[1]:
+            out = spectrogram
+        else:
+            out = cv2.copyMakeBorder(spectrogram,
+                                     top=0,
+                                     bottom=0,
+                                     left=0,
+                                     right=self.model.audio_input_shape[1] - spectrogram.shape[1],
+                                     borderType=cv2.BORDER_REPLICATE)
         out = np.expand_dims(out, -1)
+        out = out / 255.
         return self.audio_augmentor(out)
 
     def zip_samples(self, frames, spectrograms, labels):
