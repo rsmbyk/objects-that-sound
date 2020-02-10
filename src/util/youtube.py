@@ -11,6 +11,7 @@ outfile_extensions = ('mkv', 'mp4', 'webm')
 # non-network keyword errors
 err_keywords = ['"token" parameter not in video info for unknown reason;',
                 'requested format not available;',
+                'This video is private.',
                 'This video is unavailable.',
                 'This video is not available.',
                 'This video has been removed by the user',
