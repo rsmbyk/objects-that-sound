@@ -1,5 +1,6 @@
 import contextlib
 import os
+import platform
 import shutil
 
 import pytest
@@ -55,9 +56,10 @@ def test_ffmpeg_not_available():
 
     if ffmpeg_path:
         # remove ffmpeg from PATH
-        path = os.environ['PATH'].split(';')
+        delimiter = ';' if platform.system() == 'Windows' else ':'
+        path = os.environ['PATH'].split(delimiter)
         path.remove(os.path.dirname(ffmpeg_path))
-        os.environ['PATH'] = ';'.join(path)
+        os.environ['PATH'] = delimiter.join(path)
 
     assert not shutil.which('ffmpeg')
 
@@ -66,9 +68,10 @@ def test_ffmpeg_not_available():
 
     if ffmpeg_path:
         # put ffmpeg back to PATH
-        path = os.environ['PATH'].split(';')
+        delimiter = ';' if platform.system() == 'Windows' else ':'
+        path = os.environ['PATH'].split(delimiter)
         path.append(os.path.dirname(ffmpeg_path))
-        os.environ['PATH'] = ';'.join(path)
+        os.environ['PATH'] = delimiter.join(path)
 
     assert shutil.which('ffmpeg')
 

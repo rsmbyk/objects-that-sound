@@ -1,5 +1,6 @@
 import contextlib
 import os
+import platform
 import shutil
 
 import pytest
@@ -38,9 +39,10 @@ def test_ffprobe_not_available():
 
     if ffprobe_path:
         # remove ffprobe from PATH
-        path = os.environ['PATH'].split(';')
+        delimiter = ';' if platform.system() == 'Windows' else ':'
+        path = os.environ['PATH'].split(delimiter)
         path.remove(os.path.dirname(ffprobe_path))
-        os.environ['PATH'] = ';'.join(path)
+        os.environ['PATH'] = delimiter.join(path)
 
     assert not shutil.which('ffprobe')
 
@@ -49,9 +51,10 @@ def test_ffprobe_not_available():
 
     if ffprobe_path:
         # put ffprobe back to PATH
-        path = os.environ['PATH'].split(';')
+        delimiter = ';' if platform.system() == 'Windows' else ':'
+        path = os.environ['PATH'].split(delimiter)
         path.append(os.path.dirname(ffprobe_path))
-        os.environ['PATH'] = ';'.join(path)
+        os.environ['PATH'] = delimiter.join(path)
 
     assert shutil.which('ffprobe')
 
