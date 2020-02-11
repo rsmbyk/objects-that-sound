@@ -4,7 +4,7 @@ from functools import reduce
 import cv2
 import math
 import numpy as np
-from tensorflow.python.keras import utils as keras_utils
+from tensorflow.keras import utils as keras_utils
 
 from core.augmentor import Augmentor
 from core.models import AVC
@@ -14,9 +14,9 @@ from core.segments import SegmentsWrapper, Segment
 class SegmentsGenerator(keras_utils.Sequence):
     default_augmentor = Augmentor()
 
-    def __init__(self, segments, negative_segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
+    def __init__(self, segments, model, batch_size=None, vision_augmentor=None, audio_augmentor=None):
         self.segments = self.__validate_segments(segments)
-        self.negative_segments = self.__validate_segments(negative_segments)
+        self.negative_segments = self.__validate_segments(segments)
         self.__validate_batch_size(batch_size)
         self.__validate_model(model)
         self.__validate_augmentors(vision_augmentor, audio_augmentor)
@@ -85,15 +85,23 @@ class SegmentsGenerator(keras_utils.Sequence):
         return list(map(lambda x: x / 255., self.vision_augmentor(out)))
 
     def augment_audio(self, spectrogram):
-        if spectrogram.shape[1] == self.model.audio_input_shape[1]:
-            out = spectrogram
-        else:
-            out = cv2.copyMakeBorder(spectrogram,
+        out = spectrogram
+
+        if out.shape[0] != self.model.audio_input_shape[0]:
+            raise ValueError('Spectrogram height must have a height of {}'.format(self.model.audio_input_shape[0]))
+
+        if out.shape[1] > self.model.audio_input_shape[1]:
+            raise ValueError('Spectrogram length should not exceed model\'s audio input length of {}'.format(
+                self.model.audio_input_shape[1]))
+
+        if out.shape[1] < self.model.audio_input_shape[1]:
+            out = cv2.copyMakeBorder(out,
                                      top=0,
                                      bottom=0,
                                      left=0,
-                                     right=self.model.audio_input_shape[1] - spectrogram.shape[1],
+                                     right=self.model.audio_input_shape[1] - out.shape[1],
                                      borderType=cv2.BORDER_REPLICATE)
+
         out = np.expand_dims(out, -1)
         out = out / 255.
         return self.audio_augmentor(out)
