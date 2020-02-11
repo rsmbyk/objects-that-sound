@@ -28,4 +28,4 @@ def symlink(source, target, alias=None):
         win_symlink if platform.system() == 'Windows' else unix_symlink
 
     link_name = os.path.join(target, alias or os.path.basename(source))
-    return symlink_func(source, link_name)
+    return symlink_func(os.path.abspath(source), link_name)
