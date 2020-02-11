@@ -1,6 +1,6 @@
-import glob
 import os
 import platform
+import subprocess
 
 
 def symlink(source, target, alias=None):
@@ -11,11 +11,14 @@ def symlink(source, target, alias=None):
         os.makedirs(target)
 
     def win_symlink(src, tgt):
-        import winshell
-        shortcut = winshell.shortcut(src)
-        lnk_filepath = tgt + '.lnk'
-        shortcut.write(lnk_filepath)
-        return lnk_filepath
+        if platform.win32_ver()[0] == '7':
+            import winshell
+            shortcut = winshell.shortcut(src)
+            tgt = tgt + '.lnk'
+            shortcut.write(tgt)
+        elif not os.path.exists(tgt):
+            subprocess.check_call(f'mklink /J \"{tgt}\" \"{src}\"', shell=True)
+        return tgt
 
     def unix_symlink(src, dst):
         os.symlink(src, dst)
