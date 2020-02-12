@@ -2,7 +2,6 @@ import os
 import pprint
 import random
 import stat
-import threading
 from operator import attrgetter, itemgetter
 
 import math
@@ -13,6 +12,7 @@ import util.youtube as yt
 from core import ops
 from core.ontology import Ontology
 from core.segments import SegmentsWrapper
+from util.threading import fork
 
 
 def init(data_dir, overwrite=False):
@@ -196,18 +196,14 @@ def preprocess(data_dir, segments, workers=1):
     segments = SegmentsWrapper(segments, os.path.join(data_dir, 'raw'))
     segments = list(filter(attrgetter('is_available'), segments))
 
-    threads = list()
+    thread_args = list()
 
     for idx in range(workers):
         thread_size = math.ceil(len(segments) / workers)
         thread_start = idx * thread_size
-        thread_args = idx, segments[thread_start:thread_start + thread_size]
-        thread = threading.Thread(target=thread_function, args=thread_args)
-        threads.append(thread)
-        thread.start()
+        thread_args.append((idx, segments[thread_start:thread_start + thread_size]))
 
-    for idx, thread in enumerate(threads):
-        thread.join()
+    fork(workers, thread_function, *thread_args)
 
 
 def compress_segments(data_dir, segments, ontology, labels, output_file):
