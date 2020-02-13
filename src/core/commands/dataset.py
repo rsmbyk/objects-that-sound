@@ -1,6 +1,7 @@
 import os
 import pprint
 import random
+import shutil
 import stat
 from operator import attrgetter, itemgetter
 
@@ -204,6 +205,27 @@ def preprocess(data_dir, segments, workers=1):
         thread_args.append((idx, segments[thread_start:thread_start + thread_size]))
 
     fork(workers, thread_function, *thread_args)
+
+
+def cleanup(data_dir, segments, audio, frames, spectrograms):
+    segments = SegmentsWrapper(segments, os.path.join(data_dir, 'raw'))
+    segments = list(filter(attrgetter('is_available'), segments))
+
+    for s in segments:
+        if os.path.exists(s.wav) and audio:
+            print(f'{s.ytid}: Deleting audio...', end='\r')
+            os.remove(s.wav)
+            print(f'{s.ytid}: Deleting audio OK')
+
+        if os.path.exists(s.frames_dir) and frames:
+            print(f'{s.ytid}: Deleting frames...', end='\r')
+            shutil.rmtree(s.frames_dir)
+            print(f'{s.ytid}: Deleting frames OK')
+
+        if os.path.exists(s.spectrograms_dir) and spectrograms:
+            print(f'{s.ytid}: Deleting spectrograms...', end='\r')
+            shutil.rmtree(s.spectrograms_dir)
+            print(f'{s.ytid}: Deleting spectrograms OK')
 
 
 def compress_segments(data_dir, segments, ontology, labels, output_file):

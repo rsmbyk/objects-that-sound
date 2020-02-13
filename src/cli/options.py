@@ -37,6 +37,25 @@ overwrite =\
                  is_flag=True,
                  help='overwrite all files.')
 
+
+remove_audio =\
+    click.option('-a', '--audio',
+                 is_flag=True,
+                 help='remove audio file')
+
+
+remove_frames =\
+    click.option('-f', '--frames',
+                 is_flag=True,
+                 help='remove frames')
+
+
+remove_spectrograms =\
+    click.option('-s', '--spectrograms',
+                 is_flag=True,
+                 help='remove spectrograms')
+
+
 data_dir =\
     click.option('-d', '--data_dir',
                  type=types.DataDir(),

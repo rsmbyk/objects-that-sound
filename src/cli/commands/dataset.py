@@ -38,6 +38,18 @@ def preprocess(**kwargs):
 
 
 @groups.dataset.command()
+@arguments.data_dir
+@options.segments
+@options.remove_audio
+@options.remove_frames
+@options.remove_spectrograms
+@utils.display_params
+def cleanup(**kwargs):
+    """ Cleanup the dataset. """
+    commands.dataset.cleanup(**kwargs)
+
+
+@groups.dataset.command()
 @options.data_dir
 @options.segments
 @options.ontology
