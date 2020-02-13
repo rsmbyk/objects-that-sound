@@ -25,7 +25,7 @@ class Entry:
 
     @property
     def slug_name(self):
-        return '-'.join(map(str.lower, re.split(r'\W+', self.name)))
+        return '-'.join(map(str.lower, re.split(r'\W+', self.name))).strip('-')
 
     @property
     def proper_name(self):

@@ -18,6 +18,12 @@ def test_entry_json():
 
 
 @pytest.fixture
+def test_entry2_json():
+    with open('tests/data/ontology/entry2.json') as file:
+        return json.load(file)
+
+
+@pytest.fixture
 def test_child_entry_json():
     with open('tests/data/ontology/child.json') as file:
         return json.load(file)
@@ -38,6 +44,11 @@ def test_entry_properties(test_entry_json):
 def test_slug_name(test_entry_json):
     entry = Entry(None, **test_entry_json)
     assert entry.slug_name == 'human-sounds'
+
+
+def test_slug_name_should_not_contains_leading_or_trailing_dashes(test_entry2_json):
+    entry = Entry(None, **test_entry2_json)
+    assert not (entry.slug_name.startswith('-') or entry.slug_name.endswith('-'))
 
 
 def test_proper_name(test_entry_json):

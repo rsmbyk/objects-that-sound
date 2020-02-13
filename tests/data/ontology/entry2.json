@@ -1,0 +1,9 @@
+{
+    "id": "/m/0cdnk",
+    "name": "Roaring cats (lions, tigers)",
+    "description": "Sounds associated with the larger and more ferocious wild relatives of cats.",
+    "citation_uri": "http://en.wikipedia.org/wiki/Panthera",
+    "positive_examples": ["youtu.be/R7LrWG51wi4?start=190&end=200", "youtu.be/rSu1Cr43S2s?start=10&end=20", "youtu.be/ztymBfhfdPY?start=10&end=20", "youtu.be/5e_s-Aaic4k?start=90&end=100", "youtu.be/__-8wVOYH3c?start=70&end=80", "youtu.be/pQBQBVcSjLk?start=290&end=300", "youtu.be/OrKEBfUj95I?start=120&end=130"],
+    "child_ids": ["/m/04cvmfc", "/m/0ghcn6"],
+    "restrictions": []
+  }
