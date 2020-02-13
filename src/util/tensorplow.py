@@ -1,8 +1,8 @@
 import os
 
 import cv2
+import numpy as np
 import tensorflow as tf
-from tensorflow.python.ops import gen_audio_ops
 
 
 class Ops:
@@ -25,7 +25,7 @@ def load_wav(filename):
         raise FileNotFoundError('FILE ({})'.format(filename))
 
     contents = tf.io.read_file(filename)
-    wav = gen_audio_ops.decode_wav(contents)
+    wav = tf.audio.decode_wav(contents)
     return wav
 
 
@@ -40,20 +40,20 @@ def save_image(image, outfile):
 
 def spectrogram(waveform, sample_rate, window_length, overlap):
     # calculate spectrogram properties
-    window_size = sample_rate * window_length
-    stride = window_size * overlap
+    window_size = int(sample_rate * window_length)
+    stride = int(window_size * overlap)
 
-    # compute the spectrogram
-    spc = gen_audio_ops.audio_spectrogram(waveform, window_size, stride)
+    # compute the stft
+    stft = tf.signal.stft(tf.squeeze(waveform), window_size, stride)
 
-    # expand dims so we get the proper shape
-    expand_dims = tf.expand_dims(spc, -1)
+    # get the squared magnitude (spectrogram)
+    spec = tf.square(tf.math.abs(stft))
+
+    # convert to log-spectrogram
+    log_spec = 10 * np.log10(spec + 1e-10)
 
     # Tensorflow spectrogram has time along y axis and frequencies along x axis
     # so we fix that
-    flip = tf.image.flip_left_right(expand_dims)
-    transpose = tf.image.transpose(flip)
+    log_spec_transposed = tf.transpose(log_spec)
 
-    # remove the trailing dimension
-    squeeze = tf.squeeze(transpose, 0)
-    return squeeze
+    return log_spec_transposed

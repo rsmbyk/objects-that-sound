@@ -65,8 +65,7 @@ def compute_spectrogram(waveform, output):
                          window_length=0.01,
                          overlap=0.5)
 
-    squeeze = np.squeeze(spc, -1)
-    float32 = squeeze.astype(np.float32)
+    float32 = spc.numpy().astype(np.float32)
     np.savez_compressed(output, spectrogram=float32)
 
 

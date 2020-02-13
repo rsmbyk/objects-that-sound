@@ -11,4 +11,4 @@ def test_wav_file():
 def test_spectrogram(test_wav_file):
     wav = tp.load_wav(test_wav_file)
     spc = tp.spectrogram(wav.audio, 48000, 0.01, 0.5)
-    assert spc.shape == (257, 199, 1)
+    assert spc.shape == (257, 199)
