@@ -12,9 +12,9 @@ from util import youtube as yt
 
 @contextlib.contextmanager
 def temp_data_dir(segments):
-    s = segments[0]
+    s = segments[2]
     yt.dl(s.ytid, outtmpl=s.ydl_outtmpl)
-    yield segments
+    yield s
     shutil.rmtree(os.path.dirname(s.root_dir))
 
 
@@ -39,21 +39,21 @@ def blacklist():
 
 
 def test_preprocess(data_dir, segments):
-    with temp_data_dir(segments):
+    with temp_data_dir(segments) as s:
         commands.dataset.preprocess(data_dir, segments.filename)
-        assert os.path.exists(segments[0].frame(segments[0].start_frames))
-        assert os.path.exists(segments[0].frame(segments[0].end_frames - 1))
-        assert os.path.exists(segments[0].spectrogram(segments[0].start_frames))
-        assert os.path.exists(segments[0].spectrogram(segments[0].end_frames - 1))
+        assert os.path.exists(s.frame(s.start_frames))
+        assert os.path.exists(s.frame(s.end_frames - 1))
+        assert os.path.exists(s.spectrogram(s.start_frames))
+        assert os.path.exists(s.spectrogram(s.end_frames - 1))
 
 
 def test_preprocess_with_workers(data_dir, segments):
-    with temp_data_dir(segments):
+    with temp_data_dir(segments) as s:
         commands.dataset.preprocess(data_dir, segments.filename, workers=4)
-        assert os.path.exists(segments[0].frame(segments[0].start_frames))
-        assert os.path.exists(segments[0].frame(segments[0].end_frames - 1))
-        assert os.path.exists(segments[0].spectrogram(segments[0].start_frames))
-        assert os.path.exists(segments[0].spectrogram(segments[0].end_frames - 1))
+        assert os.path.exists(s.frame(s.start_frames))
+        assert os.path.exists(s.frame(s.end_frames - 1))
+        assert os.path.exists(s.spectrogram(s.start_frames))
+        assert os.path.exists(s.spectrogram(s.end_frames - 1))
 
 
 def test_preprocess_with_invalid_type_of_workers(data_dir, segments):
