@@ -52,8 +52,11 @@ def spectrogram(waveform, sample_rate, window_length, overlap):
     # convert to log-spectrogram
     log_spec = 10 * np.log10(spec + 1e-10)
 
+    # normalize
+    log_spec_normalized = tf.math.maximum(log_spec, log_spec.max() - 80.0)
+
     # Tensorflow spectrogram has time along y axis and frequencies along x axis
     # so we fix that
-    log_spec_transposed = tf.transpose(log_spec)
+    log_spec_transposed = tf.transpose(log_spec_normalized)
 
     return log_spec_transposed
