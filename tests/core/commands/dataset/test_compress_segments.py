@@ -34,7 +34,7 @@ def ontology(data_dir):
 def test_compress_segments(data_dir, segments, ontology):
     with temp_dir(data_dir):
         outfile = os.path.join(data_dir, 'compressed_segments.csv')
-        commands.dataset.download(('animal',), data_dir, segments.filename, ontology.filename, limit=1, max_size=10)
+        commands.dataset.download(('animal',), data_dir, segments.filename, ontology.filename, limit=1, seed=1)
         commands.dataset.compress_segments(data_dir, segments.filename, ontology.filename, ('animal',), outfile)
         segments = SegmentsWrapper(outfile, os.path.join(data_dir, 'raw'))
         segments_length = len(segments)

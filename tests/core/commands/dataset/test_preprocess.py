@@ -12,7 +12,7 @@ from util import youtube as yt
 
 @contextlib.contextmanager
 def temp_data_dir(segments):
-    s = segments[2]
+    s = segments[0]
     yt.dl(s.ytid, outtmpl=s.ydl_outtmpl)
     yield s
     shutil.rmtree(os.path.dirname(s.root_dir))

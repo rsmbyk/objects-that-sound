@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 
 import numpy as np
-from tensorflow.python.keras.callbacks import Callback
+from tensorflow.keras.callbacks import Callback
 
 
 class NumpyzBoard(Callback):
